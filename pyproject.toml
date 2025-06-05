@@ -28,3 +28,7 @@ dev = [
 packages = {find = {}}
 include-package-data = true
 
+
+[project.scripts]
+flatone = "flatone.cli:main"
+

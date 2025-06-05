@@ -10,13 +10,20 @@ Example:
 
 import argparse
 import os
+from importlib import resources
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import skeliner as sk
 from cloudvolume import CloudVolume
 from pywarper import Warper
+
+
+def _load_sac_surfaces() -> tuple[np.ndarray, np.ndarray]:
+    path = resources.files("flatone").joinpath("cached", "sac_surfaces.npz")
+    with resources.as_file(path) as npz_path, np.load(npz_path, allow_pickle=True) as z:
+        return z["on_sac_surface"], z["off_sac_surface"]
 
 
 # ---------- pure functions ------------------------------------------------- #
@@ -88,9 +95,10 @@ def warp_and_profile(skel_path: Path, outdir: Path,
 
     w = Warper(verbose=verbose)
 
-    with np.load("../flatone/cached/sac_surfaces.npz", allow_pickle=True) as z:
-        w.on_sac_surface  = z['on_sac_surface']   # μm
-        w.off_sac_surface = z['off_sac_surface']  # μm
+    # with np.load("./cached/sac_surfaces.npz", allow_pickle=True) as z:
+    #     w.on_sac_surface  = z['on_sac_surface']   # μm
+    #     w.off_sac_surface = z['off_sac_surface']  # μm
+    w.on_sac_surface, w.off_sac_surface = _load_sac_surfaces()
 
     w.skel = sk.io.load_swc(skel_path)            # μm
 
@@ -155,7 +163,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("seg_id", type=int, help="EM segment ID (integer).")
     p.add_argument(
-        "--output-dir", type=Path, default=Path("../output"),
+        "--output-dir", type=Path, default=Path("./output"),
         help="Directory in which to store meshes, skeletons, and plots.",
     )
     p.add_argument(
