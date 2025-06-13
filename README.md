@@ -1,7 +1,6 @@
 # flatone
 
-A new Python project.
-
+A commandline tool to flatten one EyeWire II neuron automatically.
 
 ## Installation
 

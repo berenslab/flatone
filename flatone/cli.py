@@ -4,12 +4,11 @@ retina_cli.py – CLI wrapper for skeletonising and warping mouse-retina arbors.
 
 Example:
     ./retina_cli.py 720575940557358735 \
-        --output-dir ../output \
+        --output-dir ./output \
         --no-verbose            # silence progress printing
 """
 
 import argparse
-import os
 from importlib import resources
 from pathlib import Path
 
@@ -19,12 +18,16 @@ import skeliner as sk
 from cloudvolume import CloudVolume
 from pywarper import Warper
 
+# def _load_sac_surfaces() -> tuple[np.ndarray, np.ndarray]:
+#     path = resources.files("flatone").joinpath("cached", "sac_surfaces.npz")
+#     with resources.as_file(path) as npz_path, np.load(npz_path, allow_pickle=True) as z:
+#         return z["on_sac_surface"], z["off_sac_surface"]
 
-def _load_sac_surfaces() -> tuple[np.ndarray, np.ndarray]:
-    path = resources.files("flatone").joinpath("cached", "sac_surfaces.npz")
+def _load_global_mapping() -> dict:
+    """Load the global mapping of segment IDs to names."""
+    path = resources.files("flatone").joinpath("cached", "global_mapping.npz")
     with resources.as_file(path) as npz_path, np.load(npz_path, allow_pickle=True) as z:
-        return z["on_sac_surface"], z["off_sac_surface"]
-
+        return {k: v for k, v in z.items()}
 
 # ---------- pure functions ------------------------------------------------- #
 
@@ -95,20 +98,16 @@ def warp_and_profile(skel_path: Path, outdir: Path,
 
     w = Warper(verbose=verbose)
 
-    # with np.load("./cached/sac_surfaces.npz", allow_pickle=True) as z:
-    #     w.on_sac_surface  = z['on_sac_surface']   # μm
-    #     w.off_sac_surface = z['off_sac_surface']  # μm
-    w.on_sac_surface, w.off_sac_surface = _load_sac_surfaces()
+    # w.on_sac_surface, w.off_sac_surface = _load_sac_surfaces()
 
     w.skel = sk.io.load_swc(skel_path)            # μm
-
-    w.build_mapping()
+    w.mapping = _load_global_mapping()
+    # w.build_mapping()
     w.warp_arbor()
-    w.get_arbor_density()
 
     # 3-D warped view -------------------------------------------------------
     fig, ax = sk.plot3v(
-        w.normed_arbor, scale=1, unit='μm',
+        w.warped_arbor, scale=1, unit='μm',
         color_by="ntype", skel_cmap="Set2",
     )
     fig.savefig(warped_png, dpi=300, bbox_inches="tight")
@@ -121,7 +120,7 @@ def warp_and_profile(skel_path: Path, outdir: Path,
     )
 
     sk.plot2d(
-        w.normed_arbor, plane="xz",
+        w.warped_arbor, plane="xz",
         ax=ax_nodes, color_by="ntype", skel_cmap="Set2",
     )
     ax_nodes.set_xlabel('X (µm)')
@@ -134,7 +133,7 @@ def warp_and_profile(skel_path: Path, outdir: Path,
     ax_nodes.text(ax_nodes.get_xlim()[1], 12, 'OFF SAC',
                   va='bottom', ha='right', fontsize=10)
 
-    prof = w.normed_arbor.extra["z_profile"]
+    prof = w.warped_arbor.extra["z_profile"]
     ax_prof.plot(prof["z_dist"], prof["z_x"], lw=2)
     ax_prof.barh(prof["z_x"], prof["z_hist"], alpha=0.5)
     ax_prof.set_xlabel('dendritic length')
