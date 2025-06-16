@@ -1,6 +1,6 @@
 # flatone
 
-A commandline tool to (1) download one EyeWire II neuron mesh as `.obj`, (2) skeletonize it as `.swc` and (3) flatten it automatically.
+A command-line tool to (1) download one EyeWire II neuron mesh as `.obj`, (2) skeletonize it as `.swc` and (3) flatten it automatically.
 
 ## Installation and Usage
 
@@ -10,6 +10,8 @@ A commandline tool to (1) download one EyeWire II neuron mesh as `.obj`, (2) ske
 brew install suite-sparse
 
 ## debian
+sudo apt-get update
+sudo apt-get install build-essential # if not already installed
 sudo apt-get install libsuitesparse-dev
 
 # install flatone
@@ -23,4 +25,3 @@ flatone 7205759405XXXXXXXX
 ```
 
 Run `flatone -h` for more options.
-

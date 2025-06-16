@@ -995,9 +995,9 @@ requires-dist = [
     { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=6.29.5" },
     { name = "maturin", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pywarper", extras = ["scikit-sparse"], specifier = ">=0.1.9" },
+    { name = "pywarper", extras = ["scikit-sparse"], specifier = ">=0.2.0" },
     { name = "ruff", marker = "extra == 'dev'" },
-    { name = "skeliner", specifier = ">=0.1.3" },
+    { name = "skeliner", specifier = ">=0.1.6" },
     { name = "twine", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev"]
@@ -2664,7 +2664,7 @@ wheels = [
 
 [[package]]
 name = "pywarper"
-version = "0.1.9"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "alphashape" },
@@ -2674,9 +2674,9 @@ dependencies = [
     { name = "skeliner" },
     { name = "watermark" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/de/a1/5a1ceb60d7a5564612070feb1f2a5e6cc411849383f7c2f09501748af4b1/pywarper-0.1.9.tar.gz", hash = "sha256:893a16375faec041560b15d8bc5ad393bf791ff6e264d4ccb11605673a82cfc3", size = 992394, upload-time = "2025-06-13T10:56:57.164Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/eb/d3/61ad4b69457fc9a171eb0149b816346c4d51f40f63ffe3462d41635de1b9/pywarper-0.2.0.tar.gz", hash = "sha256:17655262fda1470eea65b190551152032559cad2fda29e4b585232efb1e08a7c", size = 884746, upload-time = "2025-06-16T13:31:44.737Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/37/20d3daf985e11c2458254ec187d2f9f21c19a0f95f9184b8e2e31e64f002/pywarper-0.1.9-py3-none-any.whl", hash = "sha256:7e4333175e340cbc8b9582162f9a7236ca180962b26c55e8e2d2b11ae4f4a1d9", size = 26608, upload-time = "2025-06-13T10:56:55.765Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/3e/d4ec33bc03e9bae23a1eea7e06a1ec43ed052bcf48c5155cced0b0e58ce8/pywarper-0.2.0-py3-none-any.whl", hash = "sha256:bbdec17b6caeb3f0df434f828f52d4b090d7446d618e4084b1b1083568c9217e", size = 38334, upload-time = "2025-06-16T13:31:43.263Z" },
 ]
 
 [package.optional-dependencies]
@@ -3221,7 +3221,7 @@ wheels = [
 
 [[package]]
 name = "skeliner"
-version = "0.1.3"
+version = "0.1.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "igraph" },
@@ -3232,9 +3232,9 @@ dependencies = [
     { name = "scipy" },
     { name = "trimesh" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/34/74/45ce2e356dc19a9bff9d1152eaa452af6f36d6abf5a2e981964ca86a5032/skeliner-0.1.3.tar.gz", hash = "sha256:4ce1d5d40e92a34ce26b5746d09ce172af6cd7b8f833f542e69d6250863fa2ac", size = 4738293, upload-time = "2025-06-12T16:29:37.662Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e1/5a/5b6dbad2fc481edcf119de0fd25d99367c9a5a719eb1721857b77de8c5fe/skeliner-0.1.6.tar.gz", hash = "sha256:6133569ef10911d5f8f9adb5152144c2093db707a7ee15e11bb81b51bd5dd679", size = 4863761, upload-time = "2025-06-16T12:28:14.018Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c9/dc/082f3653e3a403c0a8719ec4c15181985fa66b9af91aca40c3124bbae655/skeliner-0.1.3-py3-none-any.whl", hash = "sha256:24cea25e678bf27c66871aa3b00f85dcee358af0e3a69ae208c752ad99c21345", size = 46085, upload-time = "2025-06-12T16:29:36.209Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/37/34ec4f503116ee0b70f010ca0b51b9eaf827a12dee99692d1bc1003dfaca/skeliner-0.1.6-py3-none-any.whl", hash = "sha256:c0cd70ec41ad7194aa7e24c6fa7b733fc5a1e9537ce19b2ad1d652d49563108e", size = 59838, upload-time = "2025-06-16T12:28:11.735Z" },
 ]
 
 [[package]]
