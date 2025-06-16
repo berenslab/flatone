@@ -7,10 +7,11 @@ Example:
         --output-dir ./output \
         --no-verbose            # silence progress printing
 """
-
 import argparse
+import re
 from importlib import resources
 from pathlib import Path
+from typing import Final
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -24,10 +25,66 @@ from pywarper import Warper
 #     with resources.as_file(path) as npz_path, np.load(npz_path, allow_pickle=True) as z:
 #         return z["on_sac_surface"], z["off_sac_surface"]
 
-def _load_global_mapping() -> dict:
-    """Load the global mapping of segment IDs to names."""
-    path = resources.files("flatone").joinpath("cached", "global_mapping.npz")
-    with resources.as_file(path) as npz_path, np.load(npz_path, allow_pickle=True) as z:
+_MAPPING_RE: Final = re.compile(r"^global_map_(?P<flavour>j\d)_(?P<date>\d{8})\.npz$")
+
+def _resolve_mapping_file(selector: str | Path) -> Path:
+    """
+    Turn *selector* into a concrete ``Path`` to a mapping file.
+
+    Parameters
+    ----------
+    selector
+        • 'j1' or 'j2'  →  pick the latest matching file shipped in
+          ``flatone/cached/`` (by date suffix).
+        • any other string or Path → treated as an explicit path;
+          it must exist.
+
+    Returns
+    -------
+    pathlib.Path
+        Path to the .npz file.
+
+    Raises
+    ------
+    FileNotFoundError
+        If no suitable file is found.
+    ValueError
+        If *selector* looks like j-flavour but no corresponding file exists.
+    """
+    sel = str(selector)
+
+    # explicit path ----------------------------------------------------------
+    p = Path(sel)
+    if p.suffix == ".npz" and p.exists():
+        return p.expanduser().resolve()
+
+    # j-flavour --------------------------------------------------------------
+    if sel in {"j1", "j2"}:
+        cached = resources.files("flatone").joinpath("cached")
+        # collect all matching files, keep the newest by date
+        candidates: list[tuple[str, Path]] = []
+        for file in cached.iterdir():
+            m = _MAPPING_RE.match(file.name)
+            if m and m.group("flavour") == sel:
+                candidates.append((m.group("date"), file))
+        if not candidates:
+            raise FileNotFoundError(
+                f"No global mapping with flavour '{sel}' found in flatone/cached"
+            )
+        newest = max(candidates, key=lambda t: t[0])[1]
+        return newest
+
+    # fallthrough ------------------------------------------------------------
+    raise ValueError(
+        f"Unrecognised mapping selector '{selector}'. "
+        "Use 'j1', 'j2', or a path to a .npz file."
+    )
+
+
+def _load_global_mapping(selector: str | Path = "j2") -> dict:
+    """Load the global mapping of segment-IDs to names."""
+    path = _resolve_mapping_file(selector)
+    with np.load(path, allow_pickle=True) as z:
         return {k: v for k, v in z.items()}
 
 # ---------- pure functions ------------------------------------------------- #
@@ -86,9 +143,16 @@ def build_skeleton(mesh_path: Path, outdir: Path,
         print(f"Saved skeleton and plot to {outdir}")
     return skel_path
 
-def warp_and_profile(skel_path: Path, outdir: Path, seg_id: int,
-                     z_profile_extends: list[float] | None=None,
-                     verbose: bool=False, overwrite: bool=False) -> None:
+
+def warp_and_profile(
+    skel_path: Path,
+    outdir: Path,
+    seg_id: int,
+    mapping: dict,
+    z_profile_extends: list[float] | None = None,
+    verbose: bool = False,
+    overwrite: bool = False,
+) -> None:
     """Warp arbor to SAC sheets; save warped view & depth profile."""
     warped_png = outdir / "skeleton_warped.png"
     profile_png = outdir / "strat_profile.png"
@@ -106,8 +170,8 @@ def warp_and_profile(skel_path: Path, outdir: Path, seg_id: int,
     # w.on_sac_surface, w.off_sac_surface = _load_sac_surfaces()
 
     w.skeleton = sk.io.load_swc(skel_path)            # μm
-    w.mapping = _load_global_mapping()
-    w.warp_skeleton(z_profile_extends=z_profile_extends, conformal_jump=2)
+    w.mapping = mapping
+    w.warp_skeleton(z_profile_extends=z_profile_extends)
 
     w.warped_skeleton.to_swc(outdir / "warped_skeleton.swc")  # μm
     w.warped_skeleton.to_npz(outdir / "warped_skeleton.npz")
@@ -241,6 +305,16 @@ def parse_args() -> argparse.Namespace:
         "--z-profile-extends", type=float, nargs=2, default=[-25., 40.],
         help="Z-profile extends (in µm) for the stratification profile.",
     )
+    p.add_argument(
+        "-m",
+        "--mapping",
+        default="j2",
+        help=(
+            "Which global mapping to use. "
+            "Options: 'j1', 'j2' (default) or a path to a .npz file."
+        ),
+    )
+
     return p.parse_args()
 
 def main() -> None:
@@ -255,7 +329,16 @@ def main() -> None:
     mesh_path = fetch_mesh(args.seg_id, outdir, args.verbose, overwrite_mesh)
     skel_path = build_skeleton(mesh_path, outdir,
                                args.seg_id, args.verbose, overwrite_skeleton)
-    warp_and_profile(skel_path, outdir, args.seg_id, args.z_profile_extends, args.verbose, overwrite_profile)
+    mapping_dict = _load_global_mapping(args.mapping)
+    warp_and_profile(
+        skel_path,
+        outdir,
+        args.seg_id,
+        mapping=mapping_dict,
+        z_profile_extends=args.z_profile_extends,
+        verbose=args.verbose,
+        overwrite=overwrite_profile,
+    )
 
 if __name__ == "__main__":
     main()
