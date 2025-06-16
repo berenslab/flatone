@@ -24,4 +24,21 @@ Assuming you already have CAVEClient credentials stored in your environment, you
 flatone 7205759405XXXXXXXX
 ```
 
+This will create a `output` directory in the same directory where you run the line above:
+
+```
+output
+├── 7205759405XXXXXXXX
+│   ├── mesh.obj
+│   ├── skeleton_warped.png
+│   ├── skeleton.npz
+│   ├── skeleton.png
+│   ├── skeleton.swc
+│   ├── strat_profile.png
+│   ├── warped_skeleton.npz
+│   └── warped_skeleton.swc
+```
+
+You can overwrite a certain step by using `--overwrite-*`. For now there aren't a lot of things to be tuned, except switching between different conformal maps (e.g. `--overwrite-profile --mapping j1`; default we use `j2` which is much faster but slightly less accurate); or using a different z-extends for the stratification profile in `strat_profile.png` (e.g. `--overwrite-profile --z-profile-extends -30 50`).
+
 Run `flatone -h` for more options.
