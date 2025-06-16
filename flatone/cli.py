@@ -70,7 +70,7 @@ def build_skeleton(mesh_path: Path, outdir: Path,
     if verbose:
         print("Skeletonising …")
     mesh = sk.io.load_mesh(mesh_path)                 # nm
-    skel = sk.skeletonize(mesh, verbose=verbose)      # nm
+    skel = sk.skeletonize(mesh, verbose=verbose, id=seg_id)      # nm
 
     fig, ax = sk.plot3v(
         skel, mesh, scale=1e-3, unit='μm',
@@ -79,14 +79,15 @@ def build_skeleton(mesh_path: Path, outdir: Path,
     fig.savefig(preview, dpi=300, bbox_inches="tight")
     plt.close(fig)
 
-    skel.to_swc(skel_path, scale=1e-3)                # μm
+    skel.convert_unit(target_unit="μm")
+    skel.to_swc(skel_path)               
     skel.to_npz(npz_path)
     if verbose:
         print(f"Saved skeleton and plot to {outdir}")
     return skel_path
 
 def warp_and_profile(skel_path: Path, outdir: Path, seg_id: int,
-                     zprofile_extends: list[float] | None=None,
+                     z_profile_extends: list[float] | None=None,
                      verbose: bool=False, overwrite: bool=False) -> None:
     """Warp arbor to SAC sheets; save warped view & depth profile."""
     warped_png = outdir / "skeleton_warped.png"
@@ -104,13 +105,15 @@ def warp_and_profile(skel_path: Path, outdir: Path, seg_id: int,
 
     # w.on_sac_surface, w.off_sac_surface = _load_sac_surfaces()
 
-    w.skel = sk.io.load_swc(skel_path)            # μm
+    w.skeleton = sk.io.load_swc(skel_path)            # μm
     w.mapping = _load_global_mapping()
-    w.warp_arbor(zprofile_extends=zprofile_extends)
+    w.warp_skeleton(z_profile_extends=z_profile_extends, conformal_jump=2)
 
+    w.warped_skeleton.to_swc(outdir / "warped_skeleton.swc")  # μm
+    w.warped_skeleton.to_npz(outdir / "warped_skeleton.npz")
     # 3-D warped view -------------------------------------------------------
     fig, ax = sk.plot3v(
-        w.warped_arbor, scale=1, unit='μm',
+        w.warped_skeleton, scale=1, unit='μm',
         color_by="ntype", skel_cmap="Set2", title=f"{seg_id} (warped)",
     )
 
@@ -137,7 +140,7 @@ def warp_and_profile(skel_path: Path, outdir: Path, seg_id: int,
     # --------------------------------------------------------------------------- #
     # 1.  Work out how wide the *left* pane must be so that 1 µm on X == 1 µm on Z
     # --------------------------------------------------------------------------- #
-    xyz         = w.warped_arbor.nodes                # (N, 3) columns → (x, y, z)
+    xyz         = w.warped_skeleton.nodes                # (N, 3) columns → (x, y, z)
     x_span_um   = np.ptp(xyz[:, 0])
     z_span_um   = np.ptp(xyz[:, 2])
     LEFT_W_IN   = FIG_H_IN * (x_span_um / z_span_um)  # 1:1 scale
@@ -160,7 +163,7 @@ def warp_and_profile(skel_path: Path, outdir: Path, seg_id: int,
     # --------------------------------------------------------------------------- #
     # 3.  Left panel — arbor, true 1:1 scale
     # --------------------------------------------------------------------------- #
-    sk.plot2d(w.warped_arbor, plane="xz",
+    sk.plot2d(w.warped_skeleton, plane="xz",
             ax=ax_nodes, color_by="ntype", skel_cmap="Set2")
     ax_nodes.set_xlabel('X (µm)')
     ax_nodes.set_ylabel('Z (µm)')
@@ -177,9 +180,9 @@ def warp_and_profile(skel_path: Path, outdir: Path, seg_id: int,
     # --------------------------------------------------------------------------- #
     # 4.  Right panel — fixed-width stratification profile
     # --------------------------------------------------------------------------- #
-    zp = w.warped_arbor.extra["z_profile"]
-    ax_prof.plot(zp["z_dist"], zp["z_x"], lw=2, c='black')
-    ax_prof.barh(zp["z_x"], zp["z_hist"], color='gray', alpha=0.5)
+    zp = w.warped_skeleton.extra["z_profile"]
+    ax_prof.plot(zp["distribution"], zp["x"], lw=2, c='black')
+    ax_prof.barh(zp["x"], zp["histogram"], color='gray', alpha=0.5)
     ax_prof.set_xlabel('dendritic length')
     ax_prof.set_title('Z-Profile')
 
@@ -189,19 +192,12 @@ def warp_and_profile(skel_path: Path, outdir: Path, seg_id: int,
     ax_prof.spines['right'].set_visible(False)
 
     for ax in (ax_nodes, ax_prof):
-        ax.set_ylim(zprofile_extends)
+        ax.set_ylim(z_profile_extends)
 
 
     # --------------------------------------------------------------------------- #
     fig.tight_layout(pad=0, rect=(0., 0., 1., 0.93))
 
-    # fig.subplots_adjust(top=0.96)
-    # _ = fig.text(
-    #     0.5, 0.97, str(seg_id),            # centred at the very top
-    #     ha='center', va='top',
-    #     fontsize=BASE_FS_PT * 1.6,         # title a bit larger than base
-    #     transform=fig.transFigure
-    # )
 
     fig.savefig(profile_png, dpi=300, bbox_inches="tight", pad_inches=0.02)
     plt.close(fig)
@@ -242,7 +238,7 @@ def parse_args() -> argparse.Namespace:
         help="Run quietly.",
     )
     p.add_argument(
-        "--zprofile-extends", type=float, nargs=2, default=[-25., 40.],
+        "--z-profile-extends", type=float, nargs=2, default=[-25., 40.],
         help="Z-profile extends (in µm) for the stratification profile.",
     )
     return p.parse_args()
@@ -259,7 +255,7 @@ def main() -> None:
     mesh_path = fetch_mesh(args.seg_id, outdir, args.verbose, overwrite_mesh)
     skel_path = build_skeleton(mesh_path, outdir,
                                args.seg_id, args.verbose, overwrite_skeleton)
-    warp_and_profile(skel_path, outdir, args.seg_id, args.zprofile_extends, args.verbose, overwrite_profile)
+    warp_and_profile(skel_path, outdir, args.seg_id, args.z_profile_extends, args.verbose, overwrite_profile)
 
 if __name__ == "__main__":
     main()
