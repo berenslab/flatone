@@ -5,12 +5,12 @@ A command-line tool to (1) download one EyeWire II neuron mesh as `.obj`, (2) sk
 ## Installation and Usage
 
 ```bash
-# first of all, ensure you have all dependencies ready
+# prerequisites
 ## mac
 brew update
 brew install suite-sparse
 
-## debian
+## debian/ubuntu
 sudo apt-get update
 sudo apt-get install build-essential # if not already installed
 sudo apt-get install libsuitesparse-dev
@@ -19,20 +19,20 @@ sudo apt-get install libsuitesparse-dev
 git clone https://github.com/berenslab/flatone
 cd flatone 
 
-# install flatone with uv
+# install with uv
 uv tool install .
 
-# or install it with pip
+# or with pip
 pip install -e .
 ```
 
-Assuming you already have CAVEClient credentials stored in your environment, you can download the mesh, skeletonize it, and flatten it with the current SAC surface mappings with one line in the terminal:
+With CAVEClient credentials in your environment you can run the full pipeline in one line:
 
 ```bash
 flatone 7205759405XXXXXXXX
 ```
 
-This will create a `output` directory in the same directory where you run the line above:
+This creates an `output` directory in the working directory:
 
 ```bash
 output
@@ -48,6 +48,10 @@ output
     └── strat_profile.png
 ```
 
-You can overwrite a certain step by using `--overwrite-*`. For now there aren't a lot of things to be tuned, except switching between different conformal maps (e.g. `--overwrite-profile --mapping j1`; default we use `j2` which is much faster but slightly less accurate); or using a different z-extends for the stratification profile in `strat_profile.png` (e.g. `--overwrite-profile --z-profile-extends -30 50`).
+`flatone` currently supports a handful (but very limited) of customization:
+
+- `--overwrite-*` flags redo individual steps;
+- switch the conformal map with `--mapping j1` (default `j2`: much faster, but slightly less accurate);
+- change the z-extends for the stratification profile, e.g.: `flatone SEG_ID --overwrite-profile --z-profile-extends -30 50`
 
 Run `flatone -h` for more options.
