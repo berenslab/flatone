@@ -10,7 +10,7 @@ A command-line tool to (1) download one EyeWire II neuron mesh as `.obj`, (2) sk
 brew update
 brew install suite-sparse
 
-## debian/ubuntu
+## debian/ubuntu/WSL
 sudo apt-get update
 sudo apt-get install build-essential # if not already installed
 sudo apt-get install libsuitesparse-dev
