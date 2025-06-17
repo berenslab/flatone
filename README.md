@@ -32,7 +32,7 @@ Assuming you have a CAVEClient token stored in your environment, you can run the
 flatone SEGMENT_ID
 ```
 
-(If you don't have a CAVEClient token yet, `flatone` will call `CAVEclient().auth.get_new_token()`, which will guide you to a website to get a new token. After than, you can run `flatone add-token YOUR-NEW-TOKEN` to save it to the environment and then run `flatone SEGMENT_ID` again.)
+(If you don't have a CAVEClient token yet, `flatone` will call `CAVEclient().auth.get_new_token()`, which will guide you to a website to get a new token. After that, you can run `flatone add-token YOUR-NEW-TOKEN` to save it to the environment and then run `flatone SEGMENT_ID` again.)
 
 This creates an `output` directory in the working directory:
 
