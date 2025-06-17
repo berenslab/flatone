@@ -5,8 +5,9 @@ A command-line tool to (1) download one EyeWire II neuron mesh as `.obj`, (2) sk
 ## Installation and Usage
 
 ```bash
-# install system dependencies
+# first of all, ensure you have all dependencies ready
 ## mac
+brew update
 brew install suite-sparse
 
 ## debian
@@ -14,19 +15,26 @@ sudo apt-get update
 sudo apt-get install build-essential # if not already installed
 sudo apt-get install libsuitesparse-dev
 
-# install flatone
+# clone this repo 
+git clone https://github.com/berenslab/flatone
+cd flatone 
+
+# install flatone with uv
 uv tool install .
+
+# or install it with pip
+pip install -e .
 ```
 
 Assuming you already have CAVEClient credentials stored in your environment, you can download the mesh, skeletonize it, and flatten it with the current SAC surface mappings with one line in the terminal:
 
-```
+```bash
 flatone 7205759405XXXXXXXX
 ```
 
 This will create a `output` directory in the same directory where you run the line above:
 
-```
+```bash
 output
 └── 7205759405XXXXXXXX
     ├── mesh_warped.ctm # only if `--warp-mesh` is explicitly set
