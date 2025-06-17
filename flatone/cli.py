@@ -108,9 +108,9 @@ def fetch_mesh(seg_id: int, outdir: Path, verbose: bool, overwrite: bool) -> Pat
     client = CAVEclient()
 
     if client.auth.token is None:
-        print("No CAVEclient token found. Please authenticate first.")
+        print("No CAVEclient token found.\n")
         _ = client.auth.get_new_token()
-        raise SystemExit("Authentication failed. Run `flatone add-token xxxxx` to add a token.")
+        raise SystemExit("\nRun `flatone add-token xxxxx` to add a token.")
 
     mesh_path = outdir / "mesh.obj"
     if not overwrite and mesh_path.exists():
@@ -467,7 +467,7 @@ def main() -> None:
         args = _build_token_parser().parse_args(argv[1:])
         from caveclient import CAVEclient
         CAVEclient().auth.save_token(token=args.token)
-        print("Token saved.")
+        print("Token saved. You can now try running `flatone SEG_ID` again.")
         return
 
     # skeliner.view3d

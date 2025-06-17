@@ -26,11 +26,13 @@ uv tool install .
 pip install -e .
 ```
 
-With CAVEClient credentials in your environment you can run the full pipeline in one line:
+Assuming you have a CAVEClient token stored in your environment, you can run the full pipeline in one line:
 
 ```bash
-flatone 7205759405XXXXXXXX
+flatone SEGMENT_ID
 ```
+
+(If you don't have a CAVEClient token yet, `flatone` will call `CAVEclient().auth.get_new_token()`, which will guide you to a website to get a new token. After than, you can run `flatone add-token YOUR-NEW-TOKEN` to save it to the environment and then run `flatone SEGMENT_ID` again.)
 
 This creates an `output` directory in the working directory:
 
