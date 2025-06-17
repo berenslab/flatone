@@ -19,6 +19,7 @@ import numpy as np
 import skeliner as sk
 from cloudvolume import CloudVolume
 from pywarper import Warper
+from pywarper.warpers import warp_mesh as warp_mesh_fn
 
 # def _load_sac_surfaces() -> tuple[np.ndarray, np.ndarray]:
 #     path = resources.files("flatone").joinpath("cached", "sac_surfaces.npz")
@@ -94,7 +95,8 @@ def fetch_mesh(seg_id: int, outdir: Path, verbose: bool, overwrite: bool) -> Pat
     mesh_path = outdir / "mesh.obj"
     if not overwrite and mesh_path.exists():
         if verbose:
-            print(f"Mesh for segment {seg_id} already exists.")
+            print(f"Mesh for segment {seg_id} already exists at: ")
+            print(f"  {mesh_path}")
         return mesh_path
 
     if verbose:
@@ -107,7 +109,8 @@ def fetch_mesh(seg_id: int, outdir: Path, verbose: bool, overwrite: bool) -> Pat
     mesh = cv.mesh.get(seg_id, remove_duplicate_vertices=True)[seg_id]
     mesh_path.write_bytes(mesh.to_obj())
     if verbose:
-        print(f"Saved mesh to {mesh_path}")
+        print("Saved mesh to:")
+        print(f"  {mesh_path}")
     return mesh_path
 
 
@@ -121,7 +124,8 @@ def build_skeleton(mesh_path: Path, outdir: Path,
 
     if not overwrite and skel_path.exists() and preview.exists():
         if verbose:
-            print(f"Skeleton for segment {seg_id} already exists.")
+            print(f"Skeleton for segment {seg_id} already exists at:")
+            print(f"  {skel_path}")
         return skel_path
 
     if verbose:
@@ -140,7 +144,10 @@ def build_skeleton(mesh_path: Path, outdir: Path,
     skel.to_swc(skel_path)               
     skel.to_npz(npz_path)
     if verbose:
-        print(f"Saved skeleton and plot to {outdir}")
+        print("Saved skeleton and plot to: ")
+        print(f"  {skel_path}")
+        print(f"  {npz_path}")
+        print(f"  {preview}")
     return skel_path
 
 
@@ -154,12 +161,18 @@ def warp_and_profile(
     overwrite: bool = False,
 ) -> None:
     """Warp arbor to SAC sheets; save warped view & depth profile."""
+    warped_swc = outdir / "skeleton_warped.swc"
+    wapred_npz = outdir / "skeleton_warped.npz"
     warped_png = outdir / "skeleton_warped.png"
     profile_png = outdir / "strat_profile.png"
 
     if not overwrite and warped_png.exists() and profile_png.exists():
         if verbose:
-            print("Warped arbor and depth profile already exist.")
+            print("Warped arbor and depth profile already exist at:")
+            print(f"  {warped_swc}")
+            print(f"  {wapred_npz}")
+            print(f"  {warped_png}")
+            print(f"  {profile_png}")
         return
 
     if verbose:
@@ -173,8 +186,8 @@ def warp_and_profile(
     w.mapping = mapping
     w.warp_skeleton(z_profile_extends=z_profile_extends)
 
-    w.warped_skeleton.to_swc(outdir / "warped_skeleton.swc")  # μm
-    w.warped_skeleton.to_npz(outdir / "warped_skeleton.npz")
+    w.warped_skeleton.to_swc(warped_swc)  # μm
+    w.warped_skeleton.to_npz(outdir / "skeleton_warped.npz")
     # 3-D warped view -------------------------------------------------------
     fig, ax = sk.plot3v(
         w.warped_skeleton, scale=1, unit='μm',
@@ -267,7 +280,36 @@ def warp_and_profile(
     plt.close(fig)
 
     if verbose:
-        print("Warp and profile complete.")
+        print("Skeleton warp/profile complete.")
+        print("Saved warped skeleton and stratification profile to:")
+        print(f"  {outdir / 'skeleton_warped.swc'}")
+        print(f"  {outdir / 'skeleton_warped.npz'}")
+        print(f"  {warped_png}")
+        print(f"  {profile_png}")
+
+
+def warp_mesh_and_save(
+    mesh_path: Path,
+    outdir: Path,
+    mapping: dict,
+    verbose: bool,
+    overwrite: bool,
+) -> None:
+    """Warp the *raw mesh* and save as CTM."""
+    warped_path = outdir / "mesh_warped.ctm"
+    if warped_path.exists() and not overwrite:
+        if verbose:
+            print("Warped mesh already exists at:")
+            print(f"  {warped_path}")
+        return
+
+    if verbose:
+        print("Warping raw mesh (may be slow) …")
+    mesh = sk.io.load_mesh(mesh_path)  # nm
+    warped_mesh = warp_mesh_fn(mesh, mapping, mesh_vertices_scale=1e-3, verbose=verbose)
+    sk.io.to_ctm(warped_mesh, warped_path)
+    if verbose:
+        print(f"Saved warped mesh → {warped_path}")
 
 
 # ---------- CLI entry-point ---------------------------------------------- #
@@ -296,7 +338,10 @@ def parse_args() -> argparse.Namespace:
     g_over.add_argument(
         "--overwrite-profile", action="store_true",
         help="Redo warping & stratification profile only.")
-
+    g_over.add_argument(
+        "--overwrite-warped-mesh", action="store_true",
+        help="Redo warped mesh generation only.")
+    
     p.add_argument(
         "--no-verbose", dest="verbose", action="store_false",
         help="Run quietly.",
@@ -314,6 +359,10 @@ def parse_args() -> argparse.Namespace:
             "Options: 'j1', 'j2' (default) or a path to a .npz file."
         ),
     )
+    p.add_argument(
+        "--warp-mesh", action="store_true",
+        help="Warp the mesh to the SAC sheets (default: True)."
+    )
 
     return p.parse_args()
 
@@ -325,6 +374,7 @@ def main() -> None:
     overwrite_mesh     = args.overwrite or args.overwrite_mesh
     overwrite_skeleton = args.overwrite or args.overwrite_skeleton
     overwrite_profile  = args.overwrite or args.overwrite_profile
+    overwrite_warped_mesh = args.overwrite or args.overwrite_warped_mesh
 
     mesh_path = fetch_mesh(args.seg_id, outdir, args.verbose, overwrite_mesh)
     skel_path = build_skeleton(mesh_path, outdir,
@@ -339,6 +389,12 @@ def main() -> None:
         verbose=args.verbose,
         overwrite=overwrite_profile,
     )
+
+    if args.warp_mesh:
+        warp_mesh_and_save(
+            mesh_path, outdir, mapping_dict,
+            verbose=args.verbose, overwrite=overwrite_warped_mesh
+        )
 
 if __name__ == "__main__":
     main()
