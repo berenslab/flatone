@@ -4,15 +4,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "flatone"
-version = "0.1.2"
-description = "A commandline tool to flatten one EW2 neuron automatically."
+version = "0.1.3"
+description = "A command-line tool to flatten one Eyewire2 neuron automatically."
 authors = []
 requires-python = ">=3.10.0"
 dependencies = [
     "caveclient>=7.8.0",
     "cloud-volume>=12.3.1",
     "pywarper[scikit-sparse]>=0.2.0",
-    "skeliner[3d]>=0.1.6",
+    "skeliner[3d]>=0.1.7",
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
 

@@ -997,7 +997,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pywarper", extras = ["scikit-sparse"], specifier = ">=0.2.0" },
     { name = "ruff", marker = "extra == 'dev'" },
-    { name = "skeliner", extras = ["3d"], specifier = ">=0.1.6" },
+    { name = "skeliner", extras = ["3d"], specifier = ">=0.1.7" },
     { name = "twine", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev"]
@@ -3221,7 +3221,7 @@ wheels = [
 
 [[package]]
 name = "skeliner"
-version = "0.1.6"
+version = "0.1.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "igraph" },
@@ -3232,9 +3232,9 @@ dependencies = [
     { name = "scipy" },
     { name = "trimesh" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/5a/5b6dbad2fc481edcf119de0fd25d99367c9a5a719eb1721857b77de8c5fe/skeliner-0.1.6.tar.gz", hash = "sha256:6133569ef10911d5f8f9adb5152144c2093db707a7ee15e11bb81b51bd5dd679", size = 4863761, upload-time = "2025-06-16T12:28:14.018Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d0/fe/4f113916b5fd67911f767abaa847765b0dc981b14b50732b772740989767/skeliner-0.1.7.tar.gz", hash = "sha256:382fadcc8e0f08f33d89111eebf9a71a4c7f4af3de6f96a075d97af9aefc336e", size = 4864171, upload-time = "2025-06-17T12:59:58.207Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/37/34ec4f503116ee0b70f010ca0b51b9eaf827a12dee99692d1bc1003dfaca/skeliner-0.1.6-py3-none-any.whl", hash = "sha256:c0cd70ec41ad7194aa7e24c6fa7b733fc5a1e9537ce19b2ad1d652d49563108e", size = 59838, upload-time = "2025-06-16T12:28:11.735Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/b7/359a522d989a9e488fd7c6ac31bee71998e7e6fc139acf90307c744189c4/skeliner-0.1.7-py3-none-any.whl", hash = "sha256:020cf7c53c9bbe82c1d2538f5e14a5f4fce994dbe02ac296153948886c599099", size = 60109, upload-time = "2025-06-17T12:59:56.916Z" },
 ]
 
 [package.optional-dependencies]
