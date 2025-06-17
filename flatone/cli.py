@@ -9,6 +9,7 @@ Example:
 """
 import argparse
 import re
+import sys
 from importlib import resources
 from pathlib import Path
 from typing import Final
@@ -152,7 +153,7 @@ def build_skeleton(mesh_path: Path, outdir: Path,
     return skel_path
 
 
-def warp_and_profile(
+def warp_skeleton(
     skel_path: Path,
     outdir: Path,
     seg_id: int,
@@ -316,90 +317,119 @@ def warp_mesh_and_save(
         print("Saved warped mesh to:")
         print(f"  {warped_path}\n")
 
+def run_3dviewer(outdir: Path, warped: bool) -> None:
+    if warped:
+        mesh_path = outdir / "mesh_warped.ctm"
+        skel_path = outdir / "skeleton_warped.swc"
+    else:
+        mesh_path = outdir / "mesh.obj"
+        skel_path = outdir / "skeleton.swc"
+
+    missing = [p for p in (mesh_path, skel_path) if not p.exists()]
+    if missing:
+        raise SystemExit(
+            "File(s) not found:\n  " + "\n  ".join(map(str, missing))
+            + "\nRun the 'process' pipeline first (with --warp-mesh if you need the warped mesh)."
+        )
+
+    mesh = sk.io.load_mesh(mesh_path)
+    skel = sk.io.load_swc(skel_path)
+    sk.plot.view3d(skel, mesh)
+
 
 # ---------- CLI entry-point ---------------------------------------------- #
 
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(
-        description="Skeletonise and warp a retinal segment."
+
+# --------------------------------------------------------------------------- #
+# CLI / argparse                                                              #
+# --------------------------------------------------------------------------- #
+def build_cli() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="flatone",
+        description="Mouse-retina reconstruction utilities",
+        add_help=False,  # we add help later to each sub-parser
     )
-    p.add_argument("seg_id", type=int, help="EM segment ID (integer).")
+    subparsers = parser.add_subparsers(dest="cmd")
+
+    # ---- process ----
+    p_proc = subparsers.add_parser("process", help="run full pipeline")
+    _add_process_args(p_proc)
+
+    # ---- view3d ----
+    p_vw = subparsers.add_parser("view3d", help="interactive 3-D viewer")
+    p_vw.add_argument("seg_id", type=int, help="EM segment ID")
+    p_vw.add_argument(
+        "--output-dir", type=Path, default=Path("./output"),
+        help="Directory containing meshes/skeletons (default: ./output)"
+    )
+    p_vw.add_argument("--warped", action="store_true",
+                      help="Show warped mesh + warped skeleton")
+
+    return parser
+
+
+def _add_process_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("seg_id", type=int, help="EM segment ID")
     p.add_argument(
         "--output-dir", type=Path, default=Path("./output"),
-        help="Directory in which to store meshes, skeletons, and plots.",
+        help="Directory for meshes, skeletons, and plots"
     )
 
-    # overwrite group -------------------------------------------------------
-    g_over = p.add_argument_group("overwrite options")
-    g_over.add_argument(
-        "--overwrite", action="store_true",
-        help="Redo *all* processing steps, even if outputs exist.")
-    g_over.add_argument(
-        "--overwrite-mesh", action="store_true",
-        help="Redo mesh download only.")
-    g_over.add_argument(
-        "--overwrite-skeleton", action="store_true",
-        help="Redo skeletonisation only.")
-    g_over.add_argument(
-        "--overwrite-profile", action="store_true",
-        help="Redo warping & stratification profile only.")
-    g_over.add_argument(
-        "--overwrite-warped-mesh", action="store_true",
-        help="Redo warped mesh generation only.")
-    
-    p.add_argument(
-        "--no-verbose", dest="verbose", action="store_false",
-        help="Run quietly.",
-    )
-    p.add_argument(
-        "--z-profile-extends", type=float, nargs=2, default=[-25., 40.],
-        help="Z-profile extends (in µm) for the stratification profile.",
-    )
-    p.add_argument(
-        "-m",
-        "--mapping",
-        default="j2",
-        help=(
-            "Which global mapping to use. "
-            "Options: 'j1', 'j2' (default) or a path to a .npz file."
-        ),
-    )
-    p.add_argument(
-        "--warp-mesh", action="store_true",
-        help="Warp the mesh to the SAC sheets (default: True)."
-    )
+    g_over = p.add_argument_group("overwrite")
+    g_over.add_argument("--overwrite", action="store_true")
+    g_over.add_argument("--overwrite-mesh", action="store_true")
+    g_over.add_argument("--overwrite-skeleton", action="store_true")
+    g_over.add_argument("--overwrite-profile", action="store_true")
+    g_over.add_argument("--overwrite-warped-mesh", action="store_true")
 
-    return p.parse_args()
+    p.add_argument("--no-verbose", dest="verbose", action="store_false")
+    p.add_argument("--z-profile-extends", type=float, nargs=2,
+                   default=[-25.0, 40.0], metavar=("Z_MIN", "Z_MAX"))
+    p.add_argument("-m", "--mapping", default="j2",
+                   help="Mapping: 'j1', 'j2' (default) or path to .npz")
+    p.add_argument("--warp-mesh", action="store_true",
+                   help="Also warp the raw mesh")
+
+
+def _insert_default_process(argv: list[str]) -> list[str]:
+    """If first token is a number, treat CLI as 'process' sub-command."""
+    if argv and argv[0].isdigit():
+        return ["process"] + argv
+    return argv
+
 
 def main() -> None:
-    args = parse_args()
+    argv = _insert_default_process(sys.argv[1:])
+    parser = build_cli()
+    args = parser.parse_args(argv)
+
+    if args.cmd == "view3d":
+        outdir = args.output_dir / str(args.seg_id)
+        run_3dviewer(outdir, warped=args.warped)
+        return
+
+    # ---- process (default) ------------------------------------------------
     outdir = args.output_dir / str(args.seg_id)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    overwrite_mesh     = args.overwrite or args.overwrite_mesh
-    overwrite_skeleton = args.overwrite or args.overwrite_skeleton
-    overwrite_profile  = args.overwrite or args.overwrite_profile
-    overwrite_warped_mesh = args.overwrite or args.overwrite_warped_mesh
+    ow_mesh = args.overwrite or args.overwrite_mesh
+    ow_skel = args.overwrite or args.overwrite_skeleton
+    ow_prof = args.overwrite or args.overwrite_profile
+    ow_meshwarp = args.overwrite or args.overwrite_warped_mesh
 
-    mesh_path = fetch_mesh(args.seg_id, outdir, args.verbose, overwrite_mesh)
-    skel_path = build_skeleton(mesh_path, outdir,
-                               args.seg_id, args.verbose, overwrite_skeleton)
-    mapping_dict = _load_global_mapping(args.mapping)
-    warp_and_profile(
-        skel_path,
-        outdir,
-        args.seg_id,
-        mapping=mapping_dict,
+    mesh_path = fetch_mesh(args.seg_id, outdir, args.verbose, ow_mesh)
+    skel_path = build_skeleton(mesh_path, outdir, args.seg_id, args.verbose, ow_skel)
+    mapping = _load_global_mapping(args.mapping)
+
+    warp_skeleton(
+        skel_path, outdir, args.seg_id, mapping,
         z_profile_extends=args.z_profile_extends,
-        verbose=args.verbose,
-        overwrite=overwrite_profile,
+        verbose=args.verbose, overwrite=ow_prof
     )
 
     if args.warp_mesh:
-        warp_mesh_and_save(
-            mesh_path, outdir, mapping_dict,
-            verbose=args.verbose, overwrite=overwrite_warped_mesh
-        )
+        warp_mesh_and_save(mesh_path, outdir, mapping, args.verbose, ow_meshwarp)
+
 
 if __name__ == "__main__":
     main()
