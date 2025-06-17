@@ -89,10 +89,29 @@ def _load_global_mapping(selector: str | Path = "j2") -> dict:
     with np.load(path, allow_pickle=True) as z:
         return {k: v for k, v in z.items()}
 
+def _build_token_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        prog="flatone add-token",
+        description="Save a CAVEclient token for future sessions",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    p.add_argument("token", help="token string obtained from the DAF portal")
+    return p
+
 # ---------- pure functions ------------------------------------------------- #
 
 def fetch_mesh(seg_id: int, outdir: Path, verbose: bool, overwrite: bool) -> Path:
     """Download → dedupe → save OBJ mesh; return path."""
+
+    # check caveclient credentials before proceeding
+    from caveclient import CAVEclient
+    client = CAVEclient()
+
+    if client.auth.token is None:
+        print("No CAVEclient token found. Please authenticate first.")
+        _ = client.auth.get_new_token()
+        raise SystemExit("Authentication failed. Run `flatone add-token xxxxx` to add a token.")
+
     mesh_path = outdir / "mesh.obj"
     if not overwrite and mesh_path.exists():
         if verbose:
@@ -105,7 +124,7 @@ def fetch_mesh(seg_id: int, outdir: Path, verbose: bool, overwrite: bool) -> Pat
     cv = CloudVolume(
         "graphene://middleauth+https://minnie.microns-daf.com/segmentation/table/stroeh_mouse_retina/",
         use_https=True,
-        progress=verbose,
+        progress=False,
     )
     mesh = cv.mesh.get(seg_id, remove_duplicate_vertices=True)[seg_id]
     mesh_path.write_bytes(mesh.to_obj())
@@ -426,8 +445,9 @@ def _print_top_help() -> None:
     _build_pipeline_parser().print_help()
     print(
         "\nSUB-COMMANDS\n"
-        "  view3d    interactive 3-D viewer\n"
-        "            run  “flatone view3d -h”  for its own help\n"
+        "  view3d      interactive 3-D viewer\n"
+        "  add-token   store a CAVEclient token\n"
+        "\nRun  “flatone <sub-command> -h”  for details.\n"
     )
     sys.exit(0)
 
@@ -442,7 +462,15 @@ def main() -> None:
     if not argv or argv[0] in ("-h", "--help"):
         _print_top_help()
 
-    # route to the right parser
+    # add caveclient token
+    if argv[0] == "add-token":
+        args = _build_token_parser().parse_args(argv[1:])
+        from caveclient import CAVEclient
+        CAVEclient().auth.save_token(token=args.token)
+        print("Token saved.")
+        return
+
+    # skeliner.view3d
     if argv[0] == "view3d":
         args = _build_viewer_parser().parse_args(argv[1:])
         run_3dviewer(args.seg_ids, args.output_dir, warped=args.warped)
