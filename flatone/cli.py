@@ -96,7 +96,7 @@ def fetch_mesh(seg_id: int, outdir: Path, verbose: bool, overwrite: bool) -> Pat
     if not overwrite and mesh_path.exists():
         if verbose:
             print(f"Mesh for segment {seg_id} already exists at: ")
-            print(f"  {mesh_path}")
+            print(f"  {mesh_path}\n")
         return mesh_path
 
     if verbose:
@@ -110,7 +110,7 @@ def fetch_mesh(seg_id: int, outdir: Path, verbose: bool, overwrite: bool) -> Pat
     mesh_path.write_bytes(mesh.to_obj())
     if verbose:
         print("Saved mesh to:")
-        print(f"  {mesh_path}")
+        print(f"  {mesh_path}\n")
     return mesh_path
 
 
@@ -125,7 +125,7 @@ def build_skeleton(mesh_path: Path, outdir: Path,
     if not overwrite and skel_path.exists() and preview.exists():
         if verbose:
             print(f"Skeleton for segment {seg_id} already exists at:")
-            print(f"  {skel_path}")
+            print(f"  {skel_path}\n")
         return skel_path
 
     if verbose:
@@ -148,6 +148,7 @@ def build_skeleton(mesh_path: Path, outdir: Path,
         print(f"  {skel_path}")
         print(f"  {npz_path}")
         print(f"  {preview}")
+        print("\n")
     return skel_path
 
 
@@ -173,6 +174,7 @@ def warp_and_profile(
             print(f"  {wapred_npz}")
             print(f"  {warped_png}")
             print(f"  {profile_png}")
+            print("\n")
         return
 
     if verbose:
@@ -286,6 +288,8 @@ def warp_and_profile(
         print(f"  {outdir / 'skeleton_warped.npz'}")
         print(f"  {warped_png}")
         print(f"  {profile_png}")
+        print("\n")
+
 
 
 def warp_mesh_and_save(
@@ -300,7 +304,7 @@ def warp_mesh_and_save(
     if warped_path.exists() and not overwrite:
         if verbose:
             print("Warped mesh already exists at:")
-            print(f"  {warped_path}")
+            print(f"  {warped_path}\n")
         return
 
     if verbose:
@@ -309,7 +313,8 @@ def warp_mesh_and_save(
     warped_mesh = warp_mesh_fn(mesh, mapping, mesh_vertices_scale=1e-3, verbose=verbose)
     sk.io.to_ctm(warped_mesh, warped_path)
     if verbose:
-        print(f"Saved warped mesh → {warped_path}")
+        print("Saved warped mesh to:")
+        print(f"  {warped_path}\n")
 
 
 # ---------- CLI entry-point ---------------------------------------------- #
