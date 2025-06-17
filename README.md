@@ -28,7 +28,7 @@ This will create a `output` directory in the same directory where you run the li
 
 ```
 output
-├── 7205759405XXXXXXXX
+└── 7205759405XXXXXXXX
     ├── mesh_warped.ctm # only if `--warp-mesh` is explicitly set
     ├── mesh.obj
     ├── skeleton_warped.npz
