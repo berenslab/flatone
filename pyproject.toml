@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "flatone"
-version = "0.1.1"
+version = "0.1.2"
 description = "A commandline tool to flatten one EW2 neuron automatically."
 authors = []
 requires-python = ">=3.10.0"
