@@ -373,7 +373,7 @@ def run_3dviewer(seg_ids: list[int], root_out: Path, warped: bool) -> None:
 def _build_pipeline_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="flatone",
-        description="Flatten one Eyewire-II neuron (pipeline)",
+        description="Flatten one Eyewire-II neuron automatically.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
@@ -423,16 +423,11 @@ def _build_viewer_parser() -> argparse.ArgumentParser:
 
 def _print_top_help() -> None:
     """Combined help when user calls just `flatone -h`."""
+    _build_pipeline_parser().print_help()
     print(
-        "flatone  –  mouse-retina utilities\n"
-        "\n"
-        "USAGE\n"
-        "  flatone SEG_ID [pipeline-options]       run the flattening pipeline\n"
-        "  flatone view3d [SEG_ID …] [viewer-options]   interactive 3-D viewer\n"
-        "\n"
-        "Run one of these for full option lists:\n"
-        "  flatone -h          (pipeline help)\n"
-        "  flatone view3d -h   (viewer help)\n"
+        "\nSUB-COMMANDS\n"
+        "  view3d    interactive 3-D viewer\n"
+        "            run  “flatone view3d -h”  for its own help\n"
     )
     sys.exit(0)
 
