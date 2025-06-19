@@ -177,7 +177,7 @@ def warp_skeleton(
     outdir: Path,
     seg_id: int,
     mapping: dict,
-    z_profile_extends: list[float] | None = None,
+    z_profile_extent: list[float] | None = None,
     verbose: bool = False,
     overwrite: bool = False,
 ) -> None:
@@ -206,7 +206,7 @@ def warp_skeleton(
 
     w.skeleton = sk.io.load_swc(skel_path)            # μm
     w.mapping = mapping
-    w.warp_skeleton(z_profile_extends=z_profile_extends)
+    w.warp_skeleton(z_profile_extent=z_profile_extent)
 
     w.warped_skeleton.to_swc(warped_swc)  # μm
     w.warped_skeleton.to_npz(outdir / "skeleton_warped.npz")
@@ -291,7 +291,7 @@ def warp_skeleton(
     ax_prof.spines['right'].set_visible(False)
 
     for ax in (ax_nodes, ax_prof):
-        ax.set_ylim(z_profile_extends)
+        ax.set_ylim(z_profile_extent)
 
 
     # --------------------------------------------------------------------------- #
@@ -413,7 +413,7 @@ def _build_pipeline_parser() -> argparse.ArgumentParser:
 
     # other options
     p.add_argument("--no-verbose", dest="verbose", action="store_false")
-    p.add_argument("--z-profile-extends", type=float, nargs=2,
+    p.add_argument("--z-profile-extent", type=float, nargs=2,
                    default=[-25.0, 40.0], metavar=("Z_MIN", "Z_MAX"))
     p.add_argument("-m", "--mapping", default="j2",
                    help="mapping: 'j1', 'j2' (default) or path to .npz")
@@ -493,7 +493,7 @@ def main() -> None:
     mapping = _load_global_mapping(args.mapping)
 
     warp_skeleton(skel_path, outdir, args.seg_id, mapping,
-                  z_profile_extends=args.z_profile_extends,
+                  z_profile_extent=args.z_profile_extent,
                   verbose=args.verbose, overwrite=ow_prof)
 
     if args.warp_mesh:
