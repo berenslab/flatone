@@ -970,7 +970,7 @@ wheels = [
 
 [[package]]
 name = "flatone"
-version = "0.1.4"
+version = "0.1.5"
 source = { editable = "." }
 dependencies = [
     { name = "caveclient" },
@@ -995,7 +995,7 @@ requires-dist = [
     { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=6.29.5" },
     { name = "maturin", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pywarper", extras = ["scikit-sparse"], specifier = ">=0.2.0" },
+    { name = "pywarper", extras = ["scikit-sparse"], specifier = ">=0.2.1" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "skeliner", extras = ["3d"], specifier = ">=0.1.7" },
     { name = "twine", marker = "extra == 'dev'" },
@@ -2664,7 +2664,7 @@ wheels = [
 
 [[package]]
 name = "pywarper"
-version = "0.2.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "alphashape" },
@@ -2674,9 +2674,9 @@ dependencies = [
     { name = "skeliner" },
     { name = "watermark" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/eb/d3/61ad4b69457fc9a171eb0149b816346c4d51f40f63ffe3462d41635de1b9/pywarper-0.2.0.tar.gz", hash = "sha256:17655262fda1470eea65b190551152032559cad2fda29e4b585232efb1e08a7c", size = 884746, upload-time = "2025-06-16T13:31:44.737Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a1/79/eee016de014348d187a548b1bacbeadf9632b8b033bc1f0f0d1d791a8905/pywarper-0.2.1.tar.gz", hash = "sha256:d05425afaac3afb63238db8f70e600605e6aac7b300dab54dd706a8dd2d399c4", size = 942900, upload-time = "2025-06-19T07:51:08.788Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a4/3e/d4ec33bc03e9bae23a1eea7e06a1ec43ed052bcf48c5155cced0b0e58ce8/pywarper-0.2.0-py3-none-any.whl", hash = "sha256:bbdec17b6caeb3f0df434f828f52d4b090d7446d618e4084b1b1083568c9217e", size = 38334, upload-time = "2025-06-16T13:31:43.263Z" },
+    { url = "https://files.pythonhosted.org/packages/67/28/28d05a1b8ab661a634dc33955bc92f4b08ad9c900176d68d798a818ca225/pywarper-0.2.1-py3-none-any.whl", hash = "sha256:38997778f5243d6804bf6bd11fbb7b48aa14b403b343ab27d8097c9f77d9df8e", size = 39106, upload-time = "2025-06-19T07:51:07.516Z" },
 ]
 
 [package.optional-dependencies]
