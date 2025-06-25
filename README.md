@@ -54,6 +54,6 @@ output
 
 - `--overwrite-*` flags redo individual steps;
 - switch the conformal map with `--mapping j1` (default `j2`: much faster, but slightly less accurate);
-- change the z-extends for the stratification profile, e.g.: `flatone SEG_ID --overwrite-profile --z-profile-extends -30 50`
+- change the z-extends for the stratification profile, e.g.: `flatone SEG_ID --overwrite-profile --z-profile-extent -30 50`
 
 Run `flatone -h` for more options.

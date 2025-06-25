@@ -1,16 +1,9 @@
 #!/usr/bin/env python3
-"""
-retina_cli.py – CLI wrapper for skeletonising and warping mouse-retina arbors.
-
-Example:
-    ./retina_cli.py 720575940557358735 \
-        --output-dir ./output \
-        --no-verbose            # silence progress printing
-"""
 import argparse
 import re
 import sys
 from importlib import resources
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Final
 
@@ -22,10 +15,10 @@ from cloudvolume import CloudVolume
 from pywarper import Warper
 from pywarper.warpers import warp_mesh as warp_mesh_fn
 
-# def _load_sac_surfaces() -> tuple[np.ndarray, np.ndarray]:
-#     path = resources.files("flatone").joinpath("cached", "sac_surfaces.npz")
-#     with resources.as_file(path) as npz_path, np.load(npz_path, allow_pickle=True) as z:
-#         return z["on_sac_surface"], z["off_sac_surface"]
+try:
+    __version__ = version("flatone")
+except PackageNotFoundError:
+    __version__ = "unknown"
 
 _MAPPING_RE: Final = re.compile(r"^global_map_(?P<flavour>j\d)_(?P<date>\d{8})\.npz$")
 
@@ -124,7 +117,7 @@ def fetch_mesh(seg_id: int, outdir: Path, verbose: bool, overwrite: bool) -> Pat
     cv = CloudVolume(
         "graphene://middleauth+https://minnie.microns-daf.com/segmentation/table/stroeh_mouse_retina/",
         use_https=True,
-        progress=False,
+        progress=True,
     )
     mesh = cv.mesh.get(seg_id, remove_duplicate_vertices=True)[seg_id]
     mesh_path.write_bytes(mesh.to_obj())
@@ -420,6 +413,8 @@ def _build_pipeline_parser() -> argparse.ArgumentParser:
     p.add_argument("--warp-mesh", action="store_true",
                    help="also warp the raw mesh")
 
+    p.add_argument('-v', '--version', action='version', version=__version__, help="show version")
+
     return p
 
 
@@ -457,6 +452,11 @@ def _print_top_help() -> None:
 # ──────────────────────────────────────────────────────────────────────
 def main() -> None:
     argv = sys.argv[1:]
+
+    # handle --version / -v
+    if "-v" in argv or "--version" in argv:
+        print(__version__)
+        return
 
     # top-level help
     if not argv or argv[0] in ("-h", "--help"):
