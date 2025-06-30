@@ -8,6 +8,13 @@ from pathlib import Path
 from typing import Final
 
 import matplotlib as mpl
+
+if len(sys.argv) > 1 and sys.argv[1] == "view3d":
+    mpl.use("TkAgg", force=True)        # interactive sub-command
+else:
+    mpl.use("Agg",   force=True)        # all other commands
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 import skeliner as sk
