@@ -312,8 +312,8 @@ def warp_mesh_and_save(
     verbose: bool,
     overwrite: bool,
 ) -> None:
-    """Warp the *raw mesh* and save as CTM."""
-    warped_path = outdir / "mesh_warped.ctm"
+    """Warp the *raw mesh* and save as OBJ."""
+    warped_path = outdir / "mesh_warped.obj"
     if warped_path.exists() and not overwrite:
         if verbose:
             print("Warped mesh already exists at:")
@@ -325,6 +325,7 @@ def warp_mesh_and_save(
     mesh = sk.io.load_mesh(mesh_path)  # nm
     warped_mesh = warp_mesh_fn(mesh, mapping, mesh_vertices_scale=1e-3, verbose=verbose)
     sk.io.to_ctm(warped_mesh, warped_path)
+    warped_mesh.export(warped_path)
     if verbose:
         print("Saved warped mesh to:")
         print(f"  {warped_path}\n")
@@ -353,7 +354,7 @@ def run_3dviewer(seg_ids: list[int], root_out: Path, warped: bool) -> None:
 
     for sid in seg_ids:
         seg_dir = root_out / str(sid)
-        mesh_path = seg_dir / ("mesh_warped.ctm" if warped else "mesh.obj")
+        mesh_path = seg_dir / ("mesh_warped.obj" if warped else "mesh.obj")
         skel_path = seg_dir / ("skeleton_warped.swc" if warped else "skeleton.swc")
 
         if not (mesh_path.exists() and skel_path.exists()):
