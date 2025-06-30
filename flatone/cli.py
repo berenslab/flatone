@@ -324,7 +324,6 @@ def warp_mesh_and_save(
         print("Warping raw mesh (may be slow) …")
     mesh = sk.io.load_mesh(mesh_path)  # nm
     warped_mesh = warp_mesh_fn(mesh, mapping, mesh_vertices_scale=1e-3, verbose=verbose)
-    sk.io.to_ctm(warped_mesh, warped_path)
     warped_mesh.export(warped_path)
     if verbose:
         print("Saved warped mesh to:")
