@@ -16,7 +16,7 @@ sudo apt-get install build-essential # if not already installed
 sudo apt-get install libsuitesparse-dev
 
 # clone this repo 
-git clone https://github.com/berenslab/flatone
+git clone git@github.com:berenslab/flatone.git
 cd flatone 
 
 # install with uv
@@ -39,7 +39,7 @@ This creates an `output` directory in the working directory:
 ```bash
 output
 └── 7205759405XXXXXXXX
-    ├── mesh_warped.ctm # only if `--warp-mesh` is explicitly set
+    ├── mesh_warped.obj # only if `--warp-mesh` is explicitly set
     ├── mesh.obj
     ├── skeleton_warped.npz
     ├── skeleton_warped.png
