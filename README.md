@@ -65,7 +65,9 @@ output
 - switch the conformal map with `--mapping j1` (default `j2`: much faster, but slightly less accurate);
 - change the z-extends for the stratification profile, e.g.: `flatone SEG_ID --overwrite-profile --z-profile-extent -30 50`
 
-`flatone` also has a limited interactive 3d viewer, which you can activate via `flatone view3d`. You can append a SEGMENT_ID after it to just view this cell, or without it, to view all cells within the `output/` folder. By default, it will view the unwarped meshes and skeletons together, if you warped the mesh already, you can also view the warped meshes and skeletons with `flatone view3d --warped`. You can also curate a different set of cells in another folder, then view them with `flatone view3d --warped --output-dir="path/to/another/folder".
+You can also warp the mesh, but it's not in the default as it's a much slower process and not always needed to do. You can run `flatone SEGMENT_ID --warp-mesh` to warp the mesh (and the previous steps will not be recomputed unless you also provide any of the `--overwrite*` flags).
+
+`flatone` also has a (limited) interactive 3d viewer, which you can activate via `flatone view3d`. You can append a SEGMENT_ID after it to just view this cell, or without it, to view all cells within the `output/` folder. By default, it will view the unwarped meshes and skeletons together, if you warped the mesh already, you can also view the warped meshes and skeletons with `flatone view3d --warped`. You can also curate a different set of cells in another folder, then view them with `flatone view3d --warped --output-dir="path/to/another/folder".
 
 Check `flatone -h` for more details.
 
