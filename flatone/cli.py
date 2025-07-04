@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Final
 
 import matplotlib as mpl
+import matplotlib.cm as cm
 
 if len(sys.argv) > 1 and sys.argv[1] == "view3d":
     mpl.use("TkAgg", force=True)        # interactive sub-command
@@ -380,7 +381,10 @@ def run_3dviewer(seg_ids: list[int], root_out: Path, warped: bool) -> None:
 
     # skeliner.plot.view3d can now take lists:
     # pass a *pair* of scales → (skeleton_scale, mesh_scale)
-    sk.plot.view3d(skels, meshes, scale=(1, 1e-3))
+    if len(skels) > 1:
+        sk.plot.view3d(skels, meshes, scale=(1, 1e-3), mesh_color=cm.tab20.colors)
+    else:
+        sk.plot.view3d(skels, meshes, scale=(1, 1e-3), mesh_color="same") # same == default white
 
 
 # ---------- CLI entry-point ---------------------------------------------- #
