@@ -2,9 +2,14 @@
 
 A command-line tool that automatically (1) downloads the mesh of an EyeWire II neuron as `.obj` with [CaveClient/CloudVolume](https://github.com/seung-lab/cloud-volume), (2) skeletonizes it as an `.swc` with [skeliner](https://github.com/berenslab/skeliner) and (3) flattens it with [pywarper](https://github.com/berenslab/pywarper).
 
+> __NOTE__ 
+> 
+> `flatone` is designed for quick, exploratory inspection. Skeletons and warps are generated with the default parameters of `skeliner` and `pywarper`, most of them cannot be tuned directly in `flatone`, so results might not be optimal for some cells. For higher-precision results, run `skeliner` and `pywarper` directly and fine-tune the parameters.
+
+
 ## Installation
 
-__NOTE__: `flatone` relies on SuiteSparse, which does **NOT** run on native Windows. Use it on Unix-like enviroment or Windows Subsystem for Linux (WSL 2) instead.
+`flatone` relies on SuiteSparse, which does **NOT** run on native Windows. Use it on Unix-like enviroment or Windows Subsystem for Linux (WSL 2) instead.
 
 
 ```bash
@@ -39,10 +44,6 @@ flatone -v
 ```
 
 ## Usage
-
-> DISCLAIMER 
-> 
-> `flatone` is designed for quick, exploratory inspection. Skeletons and warps are generated with the default parameters of `skeliner` and `pywarper`, most of them cannot be tuned directly in `flatone`, so results might not be optimal for some cells. For higher-precision results, run `skeliner` and `pywarper` directly and fine-tune the parameters.
 
 All you need to do is provide the segment ID of an EW2 neuron you'd like to preview: 
 
