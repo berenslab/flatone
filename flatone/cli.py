@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import argparse
+import io
 import re
 import sys
+from contextlib import redirect_stdout
 from importlib import resources
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -99,6 +101,44 @@ def _build_token_parser() -> argparse.ArgumentParser:
     p.add_argument("token", help="token string obtained from the DAF portal")
     return p
 
+def _prompt_for_token(client) -> None:
+    """
+    If the user has no token, show CaveClient’s instructions *minus* steps 3a/3b
+    and inject a Flatone-specific step 3.  Exits the program afterward.
+    """
+    if client.auth.token is not None:
+        return
+
+    print("No CAVEclient token found.\n")
+    # Capture CaveClient’s standard instructions without hard-coding them
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        client.auth.get_new_token()
+    cave_text = buf.getvalue().splitlines()
+
+    # Drop CaveClient’s “3a” and “3b” lines
+    filtered = [
+            ln for ln in cave_text
+            if not re.match(r'\s*3[ab]\)', ln)          # remove 3a/3b
+            and not re.match(r'\s*or\s*$', ln, re.I)    # remove “or”
+        ]
+    
+    # Insert our own single step 3 right after step 2
+    for idx, ln in enumerate(filtered):
+        if re.match(r'\s*2\)', ln):
+            filtered.insert(idx + 1,
+                "                3) Add it to `flatone` with:"
+            )
+            filtered.insert(idx + 2,
+                "                       flatone add-token <TOKEN>"
+            )
+            break
+
+    # Re-print the modified message and quit
+    print("\n".join(filtered))
+    raise SystemExit
+
+
 # ---------- pure functions ------------------------------------------------- #
 
 def fetch_mesh(seg_id: int, outdir: Path, verbose: bool, overwrite: bool) -> Path:
@@ -107,12 +147,8 @@ def fetch_mesh(seg_id: int, outdir: Path, verbose: bool, overwrite: bool) -> Pat
     # check caveclient credentials before proceeding
     from caveclient import CAVEclient
     client = CAVEclient()
-
-    if client.auth.token is None:
-        print("No CAVEclient token found.\n")
-        _ = client.auth.get_new_token()
-        raise SystemExit("\nRun `flatone add-token xxxxx` to add a token.")
-
+    _prompt_for_token(client)
+    
     mesh_path = outdir / "mesh.obj"
     if not overwrite and mesh_path.exists():
         if verbose:

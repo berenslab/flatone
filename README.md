@@ -1,8 +1,11 @@
 # flatone
 
-A command-line tool to (1) download one EyeWire II neuron mesh as `.obj`, (2) skeletonize it as `.swc` and (3) flatten it automatically.
+A command-line tool that automatically (1) downloads the mesh of an EyeWire II neuron as `.obj` with [CaveClient/CloudVolume](https://github.com/seung-lab/cloud-volume), (2) skeletonizes it as an `.swc` with [skeliner](https://github.com/berenslab/skeliner) and (3) flattens it with [pywarper](https://github.com/berenslab/pywarper).
 
-## Installation and Usage
+## Installation
+
+__NOTE__: `flatone` relies on SuiteSparse, which does **NOT** run on native Windows. Use it on Unix-like enviroment or Windows Subsystem for Linux (WSL 2) instead.
+
 
 ```bash
 # prerequisites
@@ -10,7 +13,7 @@ A command-line tool to (1) download one EyeWire II neuron mesh as `.obj`, (2) sk
 brew update
 brew install suite-sparse
 
-## debian/ubuntu/WSL
+## debian/ubuntu/WSL 
 sudo apt-get update
 sudo apt-get install build-essential # if not already installed
 sudo apt-get install libsuitesparse-dev
@@ -27,7 +30,7 @@ pip install -e .
 
 # but it's highly recommended to install it within a venv env
 # here we use uv again but of course you can run python -m venv 
-uv venv .venv --python 3.13
+uv venv .venv --python 3.13 # any versions>=3.10 should work
 source .venv/bin/activate
 uv pip install -e .
 
@@ -35,15 +38,45 @@ uv pip install -e .
 flatone -v 
 ```
 
-Assuming you have a CAVEClient token stored in your environment, you can run the full pipeline in one line:
+## Usage
+
+> DISCLAIMER 
+> 
+> `flatone` is designed for quick, exploratory inspection. Skeletons and warps are generated with the default parameters of `skeliner` and `pywarper`, most of them cannot be tuned directly in `flatone`, so results might not be optimal for some cells. For higher-precision results, run `skeliner` and `pywarper` directly and fine-tune the parameters.
+
+All you need to do is provide the segment ID of an EW2 neuron you'd like to preview: 
 
 ```bash
 flatone SEGMENT_ID
 ```
 
-(If you don't have a CAVEClient token yet, `flatone` will call `CAVEclient().auth.get_new_token()` automatically, which will guide you to a website to get a new token (you don't need to follow all the steps from the CAVEClient, you only need to go to the link, and get the token). After that, you can run `flatone add-token YOUR-NEW-TOKEN` to save it to the environment and then run `flatone SEGMENT_ID` again.)
+If you don't have a CAVEClient token stored in the system yet, `flatone` will call `CAVEclient().auth.get_new_token()` internally,  and prints something like:
 
-This creates an `output` directory in the working directory:
+```
+No CAVEclient token found.
+
+New Tokens need to be acquired by hand. Please follow the following steps:
+    1) Go to: https://<URL>
+    2) Log in with your Google account and copy the token shown.
+    3) Add it to Flatone with:
+    flatone add-token <TOKEN>
+    Note: ...
+    Warning! ...
+```
+
+Just follow the link, copy the token, and register it with:
+
+```bash
+flatone add-token <TOKEN>
+```
+
+The token is stored in `~/.cloudvolume/secrets`. Now you can rerun the command:
+
+```bash
+flatone SEGMENT_ID
+```
+
+This will create an `output` directory in the same directory:
 
 ```bash
 output
@@ -70,4 +103,3 @@ You can also warp the mesh, but it's not in the default as it's a much slower pr
 `flatone` also has a (limited) interactive 3d viewer, which you can activate via `flatone view3d`. You can append a SEGMENT_ID after it to just view this cell, or without it, to view all cells within the `output/` folder. By default, it will view the unwarped meshes and skeletons together, if you warped the mesh already, you can also view the warped meshes and skeletons with `flatone view3d --warped`. You can also curate a different set of cells in another folder, then view them with `flatone view3d --warped --output-dir="path/to/another/folder".
 
 Check `flatone -h` for more details.
-
