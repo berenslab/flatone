@@ -183,16 +183,18 @@ def build_skeleton(
     verbose: bool,
     overwrite: bool,
 ) -> Path:
-    """Skeletonise mesh, save SWC & preview PNG; return SWC path."""
-    skel_path = outdir / "skeleton.swc"
+    """Skeletonise mesh, save SWC, NPZ & preview PNG; return NPZ path."""
+    swc_path = outdir / "skeleton.swc"
     npz_path = outdir / "skeleton.npz"
     preview = outdir / "skeleton.png"
 
-    if not overwrite and skel_path.exists() and preview.exists():
+    if not overwrite and npz_path.exists() and preview.exists():
         if verbose:
             print(f"Skeleton for segment {seg_id} already exists at:")
-            print(f"  {skel_path}\n")
-        return skel_path
+            print(f"  {swc_path}\n")
+            print(f"  {npz_path}\n")
+
+        return npz_path
 
     if verbose:
         print("Skeletonising …")
@@ -220,15 +222,15 @@ def build_skeleton(
     plt.close(fig)
 
     skel.convert_unit(target_unit="μm")
-    skel.to_swc(skel_path)
+    skel.to_swc(swc_path)
     skel.to_npz(npz_path)
     if verbose:
         print("Saved skeleton and plot to: ")
-        print(f"  {skel_path}")
+        print(f"  {swc_path}")
         print(f"  {npz_path}")
         print(f"  {preview}")
         print("\n")
-    return skel_path
+    return npz_path
 
 
 def warp_skeleton(
@@ -263,7 +265,7 @@ def warp_skeleton(
 
     # w.on_sac_surface, w.off_sac_surface = _load_sac_surfaces()
 
-    w.skeleton = sk.io.load_swc(skel_path)  # μm
+    w.skeleton = sk.io.load_npz(skel_path)  # μm
     w.mapping = mapping
     w.warp_skeleton(z_profile_extent=z_profile_extent)
 
@@ -409,25 +411,63 @@ def warp_mesh_and_save(
     mesh_path: Path,
     outdir: Path,
     mapping: dict,
+    seg_id: str,
     verbose: bool,
     overwrite: bool,
 ) -> None:
-    """Warp the *raw mesh* and save as OBJ."""
+    """
+    Warp the *raw mesh* and save as OBJ.
+
+    If mesh_warped.obj already exists and overwrite=False, skip re-warping
+    and just (re)generate the plot using the existing warped mesh.
+    """
     warped_path = outdir / "mesh_warped.obj"
-    if warped_path.exists() and not overwrite:
-        if verbose:
-            print("Warped mesh already exists at:")
-            print(f"  {warped_path}\n")
-        return
+    out_png = outdir / "skeleton_warped_with_mesh.png"
+
+    to_warp = overwrite or not warped_path.exists()
 
     if verbose:
-        print("Warping raw mesh (may be slow) …")
-    mesh = sk.io.load_mesh(mesh_path)  # nm
-    warped_mesh = warp_mesh_fn(mesh, mapping, mesh_vertices_scale=1e-3, verbose=verbose)
-    warped_mesh.export(warped_path)
+        if to_warp:
+            print("Warping raw mesh (may be slow) …")
+        else:
+            print(
+                "Using existing warped mesh; skipping re-warp and regenerating plot …"
+            )
+
+    if to_warp:
+        mesh = sk.io.load_mesh(mesh_path)  # nm
+        warped_mesh = warp_mesh_fn(
+            mesh, mapping, mesh_vertices_scale=1e-3, verbose=verbose
+        )
+        warped_mesh.export(warped_path)
+    else:
+        # Load the already-warped mesh from disk
+        warped_mesh = sk.io.load_mesh(warped_path)
+
+    # Always (re)create the plot
+    warped_skel = sk.io.load_npz(outdir / "skeleton_warped.npz")
+    fig, ax = sk.plot3v(
+        warped_skel,
+        warped_mesh,
+        scale=(1, 1e-3),
+        unit="μm",
+        title=f"{seg_id}",
+        color_by="ntype",
+        skel_cmap="Set2",
+    )
+    fig.savefig(out_png, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
     if verbose:
-        print("Saved warped mesh to:")
-        print(f"  {warped_path}\n")
+        if to_warp:
+            print("Saved warped mesh and plot to:")
+            print(f"  {warped_path}")
+            print(f"  {out_png}\n")
+        else:
+            print("Reused warped mesh at:")
+            print(f"  {warped_path}")
+            print("Saved new plot to:")
+            print(f"  {out_png}\n")
 
 
 def _gather_all_segids(root_out: Path) -> list[int]:
@@ -698,7 +738,9 @@ def main() -> None:
     )
 
     if args.warp_mesh:
-        warp_mesh_and_save(mesh_path, outdir, mapping, args.verbose, ow_meshwarp)
+        warp_mesh_and_save(
+            mesh_path, outdir, mapping, args.seg_id, args.verbose, ow_meshwarp
+        )
 
 
 if __name__ == "__main__":
