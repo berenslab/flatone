@@ -487,6 +487,37 @@ def run_3dviewer(seg_ids: list[int], root_out: Path, warped: bool) -> None:
         )  # same == default white
 
 
+def _safe_module_version(mod_name: str, dist_name: str | None = None) -> str:
+    """Best-effort version lookup: module.__version__ → metadata.version → 'unknown'."""
+    try:
+        mod = __import__(mod_name)
+        v = getattr(mod, "__version__", None)
+        if v:
+            return str(v)
+    except Exception:
+        pass
+    try:
+        return version(dist_name or mod_name)
+    except Exception:
+        return "unknown"
+
+
+def _print_versions() -> None:
+    """Print key package versions at startup."""
+    pkgs = [
+        ("flatone", __version__),
+        ("caveclient", _safe_module_version("caveclient")),
+        ("cloudvolume", _safe_module_version("cloudvolume", "cloud-volume")),
+        ("skeliner", _safe_module_version("skeliner")),
+        ("pywarper", _safe_module_version("pywarper")),
+    ]
+    w = max(len(name) for name, _ in pkgs)
+    print("Package versions:")
+    for name, ver in pkgs:
+        print(f"  {name:<{w}}  {ver}")
+    print()
+
+
 # ---------- CLI entry-point ---------------------------------------------- #
 
 
@@ -631,6 +662,9 @@ def main() -> None:
 
     # otherwise: pipeline
     args = _build_pipeline_parser().parse_args(argv)
+
+    if args.verbose:
+        _print_versions()
 
     outdir = args.output_dir / str(args.seg_id)
     outdir.mkdir(parents=True, exist_ok=True)
