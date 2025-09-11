@@ -272,14 +272,28 @@ def warp_skeleton(
     w.warped_skeleton.to_swc(warped_swc)  # μm
     w.warped_skeleton.to_npz(outdir / "skeleton_warped.npz")
     # 3-D warped view -------------------------------------------------------
-    fig, ax = sk.plot3v(
-        w.warped_skeleton,
-        scale=1,
-        unit="μm",
-        color_by="ntype",
-        skel_cmap="Set2",
-        title=f"{seg_id} (warped)",
-    )
+    # If a warped mesh exists, plot it together with the warped skeleton
+    warped_mesh_path = outdir / "mesh_warped.obj"
+    if warped_mesh_path.exists():
+        warped_mesh = sk.io.load_mesh(warped_mesh_path)
+        fig, ax = sk.plot3v(
+            w.warped_skeleton,
+            warped_mesh,
+            scale=(1, 1e-3),
+            unit="μm",
+            color_by="ntype",
+            skel_cmap="Set2",
+            title=f"{seg_id} (warped)",
+        )
+    else:
+        fig, ax = sk.plot3v(
+            w.warped_skeleton,
+            scale=1,
+            unit="μm",
+            color_by="ntype",
+            skel_cmap="Set2",
+            title=f"{seg_id} (warped)",
+        )
 
     fig.savefig(warped_png, dpi=300, bbox_inches="tight")
     plt.close(fig)
@@ -422,7 +436,7 @@ def warp_mesh_and_save(
     and just (re)generate the plot using the existing warped mesh.
     """
     warped_path = outdir / "mesh_warped.obj"
-    out_png = outdir / "skeleton_warped_with_mesh.png"
+    out_png = outdir / "skeleton_warped.png"
 
     to_warp = overwrite or not warped_path.exists()
 
@@ -430,9 +444,7 @@ def warp_mesh_and_save(
         if to_warp:
             print("Warping raw mesh (may be slow) …")
         else:
-            print(
-                "Using existing warped mesh; skipping re-warp and regenerating plot …"
-            )
+            print("Using existing warped mesh …")
 
     if to_warp:
         mesh = sk.io.load_mesh(mesh_path)  # nm
@@ -444,30 +456,46 @@ def warp_mesh_and_save(
         # Load the already-warped mesh from disk
         warped_mesh = sk.io.load_mesh(warped_path)
 
-    # Always (re)create the plot
-    warped_skel = sk.io.load_npz(outdir / "skeleton_warped.npz")
-    fig, ax = sk.plot3v(
-        warped_skel,
-        warped_mesh,
-        scale=(1, 1e-3),
-        unit="μm",
-        title=f"{seg_id}",
-        color_by="ntype",
-        skel_cmap="Set2",
-    )
-    fig.savefig(out_png, dpi=300, bbox_inches="tight")
-    plt.close(fig)
+    # Create the combined plot only if a warped skeleton exists.
+    skel_npz_path = outdir / "skeleton_warped.npz"
+    if skel_npz_path.exists():
+        warped_skel = sk.io.load_npz(skel_npz_path)
+        fig, ax = sk.plot3v(
+            warped_skel,
+            warped_mesh,
+            scale=(1, 1e-3),
+            unit="μm",
+            title=f"{seg_id} (warped)",
+            color_by="ntype",
+            skel_cmap="Set2",
+        )
+        fig.savefig(out_png, dpi=300, bbox_inches="tight")
+        plt.close(fig)
+    else:
+        if verbose:
+            print(
+                "Warped skeleton not found; skipping combined plot. "
+                "(Will be included in warp_skeleton’s plot if available.)"
+            )
 
     if verbose:
-        if to_warp:
-            print("Saved warped mesh and plot to:")
+        if to_warp and skel_npz_path.exists():
+            print("Saved warped mesh and combined plot to:")
             print(f"  {warped_path}")
+            print(f"  {out_png}\n")
+        elif to_warp and not skel_npz_path.exists():
+            print("Saved warped mesh to:")
+            print(f"  {warped_path}")
+            print("No warped skeleton found; skipped combined plot.\n")
+        elif (not to_warp) and skel_npz_path.exists():
+            print("Reused warped mesh at:")
+            print(f"  {warped_path}")
+            print("Saved combined plot to:")
             print(f"  {out_png}\n")
         else:
             print("Reused warped mesh at:")
             print(f"  {warped_path}")
-            print("Saved new plot to:")
-            print(f"  {out_png}\n")
+            print("No warped skeleton found; skipped combined plot.\n")
 
 
 def _gather_all_segids(root_out: Path) -> list[int]:
@@ -727,6 +755,12 @@ def main() -> None:
     )
     mapping = _load_global_mapping(args.mapping)
 
+    # Optionally warp the mesh first so that warp_skeleton can overlay it
+    if args.warp_mesh:
+        warp_mesh_and_save(
+            mesh_path, outdir, mapping, args.seg_id, args.verbose, ow_meshwarp
+        )
+
     warp_skeleton(
         skel_path,
         outdir,
@@ -736,11 +770,6 @@ def main() -> None:
         verbose=args.verbose,
         overwrite=ow_prof,
     )
-
-    if args.warp_mesh:
-        warp_mesh_and_save(
-            mesh_path, outdir, mapping, args.seg_id, args.verbose, ow_meshwarp
-        )
 
 
 if __name__ == "__main__":
