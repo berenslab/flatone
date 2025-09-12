@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10.0"
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'win32'",
@@ -995,7 +995,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pywarper", extras = ["scikit-sparse"], specifier = ">=0.2.3" },
     { name = "ruff", marker = "extra == 'dev'" },
-    { name = "skeliner", extras = ["3d"], specifier = ">=0.2.0" },
+    { name = "skeliner", extras = ["3d"], specifier = ">=0.2.1" },
     { name = "twine", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev"]
@@ -3156,7 +3156,7 @@ wheels = [
 
 [[package]]
 name = "skeliner"
-version = "0.2.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "igraph" },
@@ -3166,9 +3166,9 @@ dependencies = [
     { name = "scipy" },
     { name = "trimesh" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/45/0e/16609e0fd1de022dc16c6ed420c9b777939e35796c81cf1536b41c5bc1b5/skeliner-0.2.0.tar.gz", hash = "sha256:f0908588714a88b3432ea93372f9e279bc7c2376306cd8c1b0783e3221b5113b", size = 11351118, upload-time = "2025-09-11T14:58:21.589Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/57/7295aafc6207c7048fed538e9844ecbd71f8ac7d1fe9951881eb1d54800f/skeliner-0.2.1.tar.gz", hash = "sha256:ccabc8962013752946688889140bba3dbe61b834d8143cbdf19c54c9515ebe7f", size = 11350836, upload-time = "2025-09-12T13:00:18.241Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/eb/cb/2af2526d17f7f3a9f7c723caf5f4c51457aeb1f6b307f68b13338b6544df/skeliner-0.2.0-py3-none-any.whl", hash = "sha256:2fd3466073bd8fa4d4034e76c4421007463b1858311093f19b7bfa8d02c83a75", size = 97943, upload-time = "2025-09-11T14:58:18.431Z" },
+    { url = "https://files.pythonhosted.org/packages/29/38/99a4e7d843cf7544d178078625eaf535d52954e9f32f6fae5e4c40a8d786/skeliner-0.2.1-py3-none-any.whl", hash = "sha256:42e39bf94103ffbca79d00c75a820eb8f3e7e7523c8ddd4a5b9f5d46e0a1a2ea", size = 97650, upload-time = "2025-09-12T13:00:16.883Z" },
 ]
 
 [package.optional-dependencies]
