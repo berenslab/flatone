@@ -642,18 +642,26 @@ def _build_pipeline_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--soma-threshold",
         type=float,
-        help="(0-90)",
+        help=(
+            "Percentile (0-100) of the node radius distribution used to detect the "
+            "soma; default: 99.9."
+        ),
         default=99.9,
     )
     p.add_argument(
         "--soma-distance-factor",
         type=int,
+        help=(
+            "Distance factor for soma detection: keeps candidate nodes within "
+            "factor × R_max of the largest-radius node; higher values admit more "
+            "distant candidates (default: 4)."
+        ),
         default=4,
     )
     p.add_argument(
         "--soma-init-guess-mode",
         type=str,
-        help="choose the min or max node in Z axis as initial guess",
+        help="Choose the min or max node in Z axis as initial guess; default: min.",
         default="min",
     )
 
