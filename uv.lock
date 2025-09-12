@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10.0"
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'win32'",
@@ -970,7 +970,7 @@ wheels = [
 
 [[package]]
 name = "flatone"
-version = "0.1.11"
+version = "0.1.12"
 source = { editable = "." }
 dependencies = [
     { name = "caveclient" },
@@ -982,7 +982,6 @@ dependencies = [
 [package.optional-dependencies]
 dev = [
     { name = "ipykernel" },
-    { name = "maturin" },
     { name = "pytest" },
     { name = "ruff" },
     { name = "twine" },
@@ -993,11 +992,10 @@ requires-dist = [
     { name = "caveclient", specifier = ">=7.8.0" },
     { name = "cloud-volume", specifier = ">=12.3.1" },
     { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=6.29.5" },
-    { name = "maturin", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pywarper", extras = ["scikit-sparse"], specifier = ">=0.2.2" },
+    { name = "pywarper", extras = ["scikit-sparse"], specifier = ">=0.2.3" },
     { name = "ruff", marker = "extra == 'dev'" },
-    { name = "skeliner", extras = ["3d"], specifier = ">=0.1.14" },
+    { name = "skeliner", extras = ["3d"], specifier = ">=0.2.1" },
     { name = "twine", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev"]
@@ -1772,29 +1770,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/99/5b/a36a337438a14116b16480db471ad061c36c3694df7c2084a0da7ba538b7/matplotlib_inline-0.1.7.tar.gz", hash = "sha256:8423b23ec666be3d16e16b60bdd8ac4e86e840ebd1dd11a30b9f117f2fa0ab90", size = 8159, upload-time = "2024-04-15T13:44:44.803Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8f/8e/9ad090d3553c280a8060fbf6e24dc1c0c29704ee7d1c372f0c174aa59285/matplotlib_inline-0.1.7-py3-none-any.whl", hash = "sha256:df192d39a4ff8f21b1895d72e6a13f5fcc5099f00fa84384e0ea28c2cc0653ca", size = 9899, upload-time = "2024-04-15T13:44:43.265Z" },
-]
-
-[[package]]
-name = "maturin"
-version = "1.8.6"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "tomli", marker = "python_full_version < '3.11'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/34/bc/c7df50a359c3a31490785c77d1ddd5fc83cc8cc07a4eddd289dbae53545a/maturin-1.8.6.tar.gz", hash = "sha256:0e0dc2e0bfaa2e1bd238e0236cf8a2b7e2250ccaa29c1aa8d0e61fa664b0289d", size = 203320, upload-time = "2025-05-13T13:56:11.033Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d3/f1/e493add40aebdab88ac1aefb41b9c84ac288fb00025bc96b9213ee02c958/maturin-1.8.6-py3-none-linux_armv6l.whl", hash = "sha256:1bf4c743dd2b24448e82b8c96251597818956ddf848e1d16b59356512c7e58d8", size = 7831195, upload-time = "2025-05-13T13:55:42.634Z" },
-    { url = "https://files.pythonhosted.org/packages/f0/1c/588afdb7bf79c4f15e33e9af6d7f3b12ec662bc63a22919e3bf39afa2a1e/maturin-1.8.6-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:4ea89cf76048bc760e12b36b608fc3f5ef4f7359c0895e9afe737be34041d948", size = 15276471, upload-time = "2025-05-13T13:55:46.196Z" },
-    { url = "https://files.pythonhosted.org/packages/62/0b/4ce97f7f3a42068fbb42ba47d8b072e098c060fc1f64d8523e5588c57543/maturin-1.8.6-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:4dd2e2f005ca63ac7ef0dddf2d65324ee480277a11544dcc4e7e436af68034dd", size = 7966129, upload-time = "2025-05-13T13:55:48.633Z" },
-    { url = "https://files.pythonhosted.org/packages/84/bf/4eae9d12920c580baf9d47ee63fec3ae0233e90a3aa8987bd7909cdc36a0/maturin-1.8.6-py3-none-manylinux_2_12_i686.manylinux2010_i686.musllinux_1_1_i686.whl", hash = "sha256:b0637604774e2c50ab48a0e9023fe2f071837ecbc817c04ec28e1cfcc25224c2", size = 7835935, upload-time = "2025-05-13T13:55:51.235Z" },
-    { url = "https://files.pythonhosted.org/packages/f9/aa/8090f8b3f5f7ec46bc95deb0f5b29bf52c98156ef594f2e65d20bf94cea1/maturin-1.8.6-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl", hash = "sha256:bec5948c6475954c8089b17fae349966258756bb2ca05e54099e476a08070795", size = 8282553, upload-time = "2025-05-13T13:55:53.266Z" },
-    { url = "https://files.pythonhosted.org/packages/bc/50/4348da6cc16c006dab4e6cd479cf00dc0afa80db289a115a314df9909ee6/maturin-1.8.6-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl", hash = "sha256:62a65f70ebaadd6eb6083f5548413744f2ef12400445778e08d41d4facf15bbe", size = 7618339, upload-time = "2025-05-13T13:55:55.706Z" },
-    { url = "https://files.pythonhosted.org/packages/ce/77/16458e29487d068c8cdb7f06a4403393568a10b44993fe2ec9c3b29fdccd/maturin-1.8.6-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.musllinux_1_1_armv7l.whl", hash = "sha256:5c0ff7ad43883920032b63c94c76dcdd5758710d7b72b68db69e7826c40534ac", size = 7686748, upload-time = "2025-05-13T13:55:57.97Z" },
-    { url = "https://files.pythonhosted.org/packages/0c/c1/a52f3c1171c053810606c7c7fae5ce4637446ef9df44f281862d2bef3750/maturin-1.8.6-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.musllinux_1_1_ppc64le.whl", hash = "sha256:ca30fdb158a24cf312f3e53072a6e987182c103fa613efea2d28b5f52707d04a", size = 9767394, upload-time = "2025-05-13T13:56:00.694Z" },
-    { url = "https://files.pythonhosted.org/packages/e2/ab/abae74f36a0f200384eda985ebeb9ee5dcbb19bfe1558c3335ef6f297094/maturin-1.8.6-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:b1e786ec9b5f7315c7e3fcc62b0715f9d99ffe477b06d0d62655a71e6a51a67b", size = 10995574, upload-time = "2025-05-13T13:56:03.101Z" },
-    { url = "https://files.pythonhosted.org/packages/8e/1c/c478578a62c1e34b5b0641a474de78cb56d6c4aad0ba88f90dfa9f2a15f7/maturin-1.8.6-py3-none-win32.whl", hash = "sha256:dade5edfaf508439ff6bbc7be4f207e04c0999c47d9ef7e1bae16258e76b1518", size = 7027171, upload-time = "2025-05-13T13:56:05.472Z" },
-    { url = "https://files.pythonhosted.org/packages/c9/89/2c57d29f25e06696cb3c5b3770ba0b40dfe87f91a879ecbcdc92e071a26b/maturin-1.8.6-py3-none-win_amd64.whl", hash = "sha256:6bc9281b90cd37e2a7985f2e5d6e3d35a1d64cf6e4d04ce5ed25603d162995b9", size = 7947998, upload-time = "2025-05-13T13:56:07.428Z" },
-    { url = "https://files.pythonhosted.org/packages/9d/f5/3ee1c6aa4e277323bef38ea0ec07262a9b88711d1a29cb5bb08ce3807a6f/maturin-1.8.6-py3-none-win_arm64.whl", hash = "sha256:24f66624db69b895b134a8f1592efdf04cd223c9b3b65243ad32080477936d14", size = 6684974, upload-time = "2025-05-13T13:56:09.415Z" },
 ]
 
 [[package]]
@@ -2625,7 +2600,7 @@ wheels = [
 
 [[package]]
 name = "pywarper"
-version = "0.2.2"
+version = "0.2.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "alphashape" },
@@ -2635,9 +2610,9 @@ dependencies = [
     { name = "skeliner" },
     { name = "watermark" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/67/29/39bc86ea2c202b492511fb3c91ed2ea41957088f6d4628f5d05b6c9bf8b8/pywarper-0.2.2.tar.gz", hash = "sha256:07fee29eb93b19894c388c50ac0b44aec2c38f603b37d73084360ceeb139358d", size = 942292, upload-time = "2025-09-10T12:30:39.828Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/01/41/f027e013b1e8a7cd323c84cd1f14d092b6e91ce6dad536ded8097ccd9bec/pywarper-0.2.3.tar.gz", hash = "sha256:870a164ef6f70df4ffe12da51bded8e6dc70ac053d77470f3fb0e279a5a35098", size = 943259, upload-time = "2025-09-12T08:39:31.002Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f6/df/e047959a74aae099fe26227f6c463a0100434030e99fa8926e457dd03fa4/pywarper-0.2.2-py3-none-any.whl", hash = "sha256:9f1f8b9dfdcdd20baf35d9cfa9a3143e12bcc81d01d91d5e72518ebbff50dc1c", size = 40551, upload-time = "2025-09-10T12:30:38.449Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/9f/e974b47d59cf7c4f46c14b42d38928c8a64f0e58b21140847d4871756572/pywarper-0.2.3-py3-none-any.whl", hash = "sha256:fa14fd3d537cbced2e0c5bdd8ff988225b660ffdbf1818e2c979088b8c2d6ee9", size = 40544, upload-time = "2025-09-12T08:39:29.93Z" },
 ]
 
 [package.optional-dependencies]
@@ -3181,7 +3156,7 @@ wheels = [
 
 [[package]]
 name = "skeliner"
-version = "0.1.14"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "igraph" },
@@ -3191,9 +3166,9 @@ dependencies = [
     { name = "scipy" },
     { name = "trimesh" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fe/fa/d16f27b1d839e1f0c562541685df420958a3ea9bd5e2bc74468bbb709162/skeliner-0.1.14.tar.gz", hash = "sha256:e9d803a327066be1d227c7b9b3bfbf14f9fa23201ddcc9abb8a081aaaa625b66", size = 11344674, upload-time = "2025-09-09T15:34:42.906Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/57/7295aafc6207c7048fed538e9844ecbd71f8ac7d1fe9951881eb1d54800f/skeliner-0.2.1.tar.gz", hash = "sha256:ccabc8962013752946688889140bba3dbe61b834d8143cbdf19c54c9515ebe7f", size = 11350836, upload-time = "2025-09-12T13:00:18.241Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c3/c3/6d9ecf8caa835c9254354e0c9dc75765de1d4149a6c5479aa4ca8895c3bc/skeliner-0.1.14-py3-none-any.whl", hash = "sha256:49bf03d0ccc121cc25358ea3b556296cf64a70e3d60c66b81afaf788cc728f54", size = 92221, upload-time = "2025-09-09T15:34:41.2Z" },
+    { url = "https://files.pythonhosted.org/packages/29/38/99a4e7d843cf7544d178078625eaf535d52954e9f32f6fae5e4c40a8d786/skeliner-0.2.1-py3-none-any.whl", hash = "sha256:42e39bf94103ffbca79d00c75a820eb8f3e7e7523c8ddd4a5b9f5d46e0a1a2ea", size = 97650, upload-time = "2025-09-12T13:00:16.883Z" },
 ]
 
 [package.optional-dependencies]

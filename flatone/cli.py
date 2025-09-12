@@ -179,29 +179,37 @@ def build_skeleton(
     seg_id: int,
     soma_threshold: float,
     soma_distance_factor: float,
+    soma_init_guess_axis: str,
     soma_init_guess_mode: str,
     verbose: bool,
     overwrite: bool,
 ) -> Path:
-    """Skeletonise mesh, save SWC & preview PNG; return SWC path."""
-    skel_path = outdir / "skeleton.swc"
+    """Skeletonise mesh, save SWC, NPZ & preview PNG; return NPZ path."""
+    swc_path = outdir / "skeleton.swc"
     npz_path = outdir / "skeleton.npz"
     preview = outdir / "skeleton.png"
 
-    if not overwrite and skel_path.exists() and preview.exists():
+    if not overwrite and npz_path.exists() and preview.exists():
         if verbose:
             print(f"Skeleton for segment {seg_id} already exists at:")
-            print(f"  {skel_path}\n")
-        return skel_path
+            print(f"  {swc_path}\n")
+            print(f"  {npz_path}\n")
+
+        return npz_path
 
     if verbose:
         print("Skeletonising …")
-        print(soma_threshold, soma_distance_factor, soma_init_guess_mode)
+        print(
+            soma_threshold,
+            soma_distance_factor,
+            f"init_guess=({soma_init_guess_axis}, {soma_init_guess_mode})",
+        )
     mesh = sk.io.load_mesh(mesh_path)  # nm
     skel = sk.skeletonize(
         mesh,
         soma_radius_percentile_threshold=soma_threshold,
         soma_radius_distance_factor=soma_distance_factor,
+        soma_init_guess_axis=soma_init_guess_axis,
         soma_init_guess_mode=soma_init_guess_mode,
         verbose=verbose,
         id=seg_id,
@@ -220,15 +228,15 @@ def build_skeleton(
     plt.close(fig)
 
     skel.convert_unit(target_unit="μm")
-    skel.to_swc(skel_path)
+    skel.to_swc(swc_path)
     skel.to_npz(npz_path)
     if verbose:
         print("Saved skeleton and plot to: ")
-        print(f"  {skel_path}")
+        print(f"  {swc_path}")
         print(f"  {npz_path}")
         print(f"  {preview}")
         print("\n")
-    return skel_path
+    return npz_path
 
 
 def warp_skeleton(
@@ -263,21 +271,35 @@ def warp_skeleton(
 
     # w.on_sac_surface, w.off_sac_surface = _load_sac_surfaces()
 
-    w.skeleton = sk.io.load_swc(skel_path)  # μm
+    w.skeleton = sk.io.load_npz(skel_path)  # μm
     w.mapping = mapping
     w.warp_skeleton(z_profile_extent=z_profile_extent)
 
     w.warped_skeleton.to_swc(warped_swc)  # μm
     w.warped_skeleton.to_npz(outdir / "skeleton_warped.npz")
     # 3-D warped view -------------------------------------------------------
-    fig, ax = sk.plot3v(
-        w.warped_skeleton,
-        scale=1,
-        unit="μm",
-        color_by="ntype",
-        skel_cmap="Set2",
-        title=f"{seg_id} (warped)",
-    )
+    # If a warped mesh exists, plot it together with the warped skeleton
+    warped_mesh_path = outdir / "mesh_warped.obj"
+    if warped_mesh_path.exists():
+        warped_mesh = sk.io.load_mesh(warped_mesh_path)
+        fig, ax = sk.plot3v(
+            w.warped_skeleton,
+            warped_mesh,
+            scale=(1, 1e-3),
+            unit="μm",
+            color_by="ntype",
+            skel_cmap="Set2",
+            title=f"{seg_id} (warped)",
+        )
+    else:
+        fig, ax = sk.plot3v(
+            w.warped_skeleton,
+            scale=1,
+            unit="μm",
+            color_by="ntype",
+            skel_cmap="Set2",
+            title=f"{seg_id} (warped)",
+        )
 
     fig.savefig(warped_png, dpi=300, bbox_inches="tight")
     plt.close(fig)
@@ -409,25 +431,77 @@ def warp_mesh_and_save(
     mesh_path: Path,
     outdir: Path,
     mapping: dict,
+    seg_id: str,
     verbose: bool,
     overwrite: bool,
 ) -> None:
-    """Warp the *raw mesh* and save as OBJ."""
+    """
+    Warp the *raw mesh* and save as OBJ.
+
+    If mesh_warped.obj already exists and overwrite=False, skip re-warping
+    and just (re)generate the plot using the existing warped mesh.
+    """
     warped_path = outdir / "mesh_warped.obj"
-    if warped_path.exists() and not overwrite:
-        if verbose:
-            print("Warped mesh already exists at:")
-            print(f"  {warped_path}\n")
-        return
+    out_png = outdir / "skeleton_warped.png"
+
+    to_warp = overwrite or not warped_path.exists()
 
     if verbose:
-        print("Warping raw mesh (may be slow) …")
-    mesh = sk.io.load_mesh(mesh_path)  # nm
-    warped_mesh = warp_mesh_fn(mesh, mapping, mesh_vertices_scale=1e-3, verbose=verbose)
-    warped_mesh.export(warped_path)
+        if to_warp:
+            print("Warping raw mesh (may be slow) …")
+        else:
+            print("Using existing warped mesh …")
+
+    if to_warp:
+        mesh = sk.io.load_mesh(mesh_path)  # nm
+        warped_mesh = warp_mesh_fn(
+            mesh, mapping, mesh_vertices_scale=1e-3, verbose=verbose
+        )
+        warped_mesh.export(warped_path)
+    else:
+        # Load the already-warped mesh from disk
+        warped_mesh = sk.io.load_mesh(warped_path)
+
+    # Create the combined plot only if a warped skeleton exists.
+    skel_npz_path = outdir / "skeleton_warped.npz"
+    if skel_npz_path.exists():
+        warped_skel = sk.io.load_npz(skel_npz_path)
+        fig, ax = sk.plot3v(
+            warped_skel,
+            warped_mesh,
+            scale=(1, 1e-3),
+            unit="μm",
+            title=f"{seg_id} (warped)",
+            color_by="ntype",
+            skel_cmap="Set2",
+        )
+        fig.savefig(out_png, dpi=300, bbox_inches="tight")
+        plt.close(fig)
+    else:
+        if verbose:
+            print(
+                "Warped skeleton not found; skipping combined plot. "
+                "(Will be included in warp_skeleton’s plot if available.)"
+            )
+
     if verbose:
-        print("Saved warped mesh to:")
-        print(f"  {warped_path}\n")
+        if to_warp and skel_npz_path.exists():
+            print("Saved warped mesh and combined plot to:")
+            print(f"  {warped_path}")
+            print(f"  {out_png}\n")
+        elif to_warp and not skel_npz_path.exists():
+            print("Saved warped mesh to:")
+            print(f"  {warped_path}")
+            print("No warped skeleton found; skipped combined plot.\n")
+        elif (not to_warp) and skel_npz_path.exists():
+            print("Reused warped mesh at:")
+            print(f"  {warped_path}")
+            print("Saved combined plot to:")
+            print(f"  {out_png}\n")
+        else:
+            print("Reused warped mesh at:")
+            print(f"  {warped_path}")
+            print("No warped skeleton found; skipped combined plot.\n")
 
 
 def _gather_all_segids(root_out: Path) -> list[int]:
@@ -574,19 +648,31 @@ def _build_pipeline_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--soma-threshold",
         type=float,
-        help="(0-90)",
+        help=(
+            "Percentile (0-100) of the node radius distribution used to detect the "
+            "soma; default: 99.9."
+        ),
         default=99.9,
     )
     p.add_argument(
         "--soma-distance-factor",
         type=int,
+        help=(
+            "Distance factor for soma detection: keeps candidate nodes within "
+            "factor × R_max of the largest-radius node; higher values admit more "
+            "distant candidates (default: 4)."
+        ),
         default=4,
     )
     p.add_argument(
-        "--soma-init-guess-mode",
-        type=str,
-        help="choose the min or max node in Z axis as initial guess",
-        default="min",
+        "--soma-init-guess",
+        nargs=2,
+        metavar=("AXIS", "EXTREME"),
+        default=("z", "min"),
+        help=(
+            "Initial guess for soma seeding: provide axis and extreme, e.g. "
+            "'z min'. AXIS ∈ {x,y,z}; EXTREME ∈ {min,max}."
+        ),
     )
 
     return p
@@ -681,11 +767,18 @@ def main() -> None:
         args.seg_id,
         args.soma_threshold,
         args.soma_distance_factor,
-        args.soma_init_guess_mode,
+        args.soma_init_guess[0],
+        args.soma_init_guess[1],
         args.verbose,
         ow_skel,
     )
     mapping = _load_global_mapping(args.mapping)
+
+    # Optionally warp the mesh first so that warp_skeleton can overlay it
+    if args.warp_mesh:
+        warp_mesh_and_save(
+            mesh_path, outdir, mapping, args.seg_id, args.verbose, ow_meshwarp
+        )
 
     warp_skeleton(
         skel_path,
@@ -696,9 +789,6 @@ def main() -> None:
         verbose=args.verbose,
         overwrite=ow_prof,
     )
-
-    if args.warp_mesh:
-        warp_mesh_and_save(mesh_path, outdir, mapping, args.verbose, ow_meshwarp)
 
 
 if __name__ == "__main__":

@@ -99,7 +99,7 @@ output
 - switch the conformal map with `--mapping j1` (default `j2`: much faster, but slightly less accurate);
 - change the z-extends for the stratification profile, e.g.: `flatone SEG_ID --overwrite-profile --z-profile-extent -30 50`
 - change the soma detection threshold if the default failed, e.g.: `flatone SEG_ID --soma-threshold 90 --overwrite-skeleton --overwrite-profile`
-- change the initial soma guess (needed if there's no soma in the mesh), e.g.: `flatone SEG_ID --soma-init-guess-mode max --overwrite-skeleton --overwrite-profile`
+- change the initial soma guess (needed if there's no soma in the mesh), e.g.: `flatone SEG_ID --soma-init-guess z max --overwrite-skeleton --overwrite-profile`
 
 You can also warp the mesh, but it's not in the default as it's a much slower process and not always needed to do. You can run `flatone SEGMENT_ID --warp-mesh` to warp the mesh (and the previous steps will not be recomputed unless you also provide any of the `--overwrite*` flags).
 
