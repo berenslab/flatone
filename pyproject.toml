@@ -11,8 +11,8 @@ requires-python = ">=3.10.0"
 dependencies = [
     "caveclient>=7.8.0",
     "cloud-volume>=12.3.1",
-    "pywarper[scikit-sparse]>=0.2.2",
-    "skeliner[3d]>=0.1.14",
+    "pywarper[scikit-sparse]>=0.2.3",
+    "skeliner[3d]>=0.2.0",
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
 
@@ -21,7 +21,6 @@ dev = [
     "ruff",
     "pytest",
     "twine",
-    "maturin",
     "ipykernel>=6.29.5",
 ]
 
