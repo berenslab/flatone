@@ -179,6 +179,7 @@ def build_skeleton(
     seg_id: int,
     soma_threshold: float,
     soma_distance_factor: float,
+    soma_init_guess_axis: str,
     soma_init_guess_mode: str,
     verbose: bool,
     overwrite: bool,
@@ -198,12 +199,17 @@ def build_skeleton(
 
     if verbose:
         print("Skeletonising …")
-        print(soma_threshold, soma_distance_factor, soma_init_guess_mode)
+        print(
+            soma_threshold,
+            soma_distance_factor,
+            f"init_guess=({soma_init_guess_axis}, {soma_init_guess_mode})",
+        )
     mesh = sk.io.load_mesh(mesh_path)  # nm
     skel = sk.skeletonize(
         mesh,
         soma_radius_percentile_threshold=soma_threshold,
         soma_radius_distance_factor=soma_distance_factor,
+        soma_init_guess_axis=soma_init_guess_axis,
         soma_init_guess_mode=soma_init_guess_mode,
         verbose=verbose,
         id=seg_id,
@@ -659,10 +665,14 @@ def _build_pipeline_parser() -> argparse.ArgumentParser:
         default=4,
     )
     p.add_argument(
-        "--soma-init-guess-mode",
-        type=str,
-        help="Choose the min or max node in Z axis as initial guess; default: min.",
-        default="min",
+        "--soma-init-guess",
+        nargs=2,
+        metavar=("AXIS", "EXTREME"),
+        default=("z", "min"),
+        help=(
+            "Initial guess for soma seeding: provide axis and extreme, e.g. "
+            "'z min'. AXIS ∈ {x,y,z}; EXTREME ∈ {min,max}."
+        ),
     )
 
     return p
@@ -757,7 +767,8 @@ def main() -> None:
         args.seg_id,
         args.soma_threshold,
         args.soma_distance_factor,
-        args.soma_init_guess_mode,
+        args.soma_init_guess[0],
+        args.soma_init_guess[1],
         args.verbose,
         ow_skel,
     )
